@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Platforms>AnyCPU;x86</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\GameServerCore\GameServerCore.csproj" />
+    <ProjectReference Include="..\..\GameServerLib\GameServerLib.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Buffs\Sion\" />
+  </ItemGroup>
+
+</Project>
