@@ -77,9 +77,9 @@ namespace LeagueSandbox.GameServer.Content
         public int DeathRecapPriority { get; set; }
         public float DelayCastOffsetPercent { get; set; }
         public float DelayTotalTimePercent { get; set; }
-        //Description
+        public string Description { get; set; } = "";
         //DisableCastBar
-        //DisplayName
+        public string DisplayName { get; set; } = "";
         public bool DoesntBreakChannels { get; set; }
         public bool DoNotNeedToFaceTarget { get; set; }
         //DrawSecondaryLineIndicator
@@ -409,9 +409,9 @@ namespace LeagueSandbox.GameServer.Content
             DeathRecapPriority = file.GetInt("SpellData", "DeathRecapPriority", DeathRecapPriority);
             DelayCastOffsetPercent = file.GetFloat("SpellData", "DelayCastOffsetPercent", DelayCastOffsetPercent);
             DelayTotalTimePercent = file.GetFloat("SpellData", "DelayTotalTimePercent", DelayTotalTimePercent);
-            //Description
+            Description = file.GetString("SpellData", "Description", Description);
             //DisableCastBar
-            //DisplayName
+            DisplayName = file.GetString("SpellData", "DisplayName", DisplayName);
             DoesntBreakChannels = file.GetBool("SpellData", "DoesntBreakChannels", DoesntBreakChannels);
             DoNotNeedToFaceTarget = file.GetBool("SpellData", "DoNotNeedToFaceTarget", DoNotNeedToFaceTarget);
             //DrawSecondaryLineIndicator

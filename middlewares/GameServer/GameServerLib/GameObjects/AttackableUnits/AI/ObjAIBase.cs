@@ -1193,7 +1193,7 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI
                 if (Vector2.Distance(TargetUnit.Position, Position) > (Stats.Range.Total + TargetUnit.CollisionRadius)
                         && AutoAttackSpell.State == SpellState.STATE_CASTING && !AutoAttackSpell.SpellData.CantCancelWhileWindingUp)
                 {
-                    CancelAutoAttack(!HasAutoAttacked, true);
+                   // CancelAutoAttack(!HasAutoAttacked, true);
                 }
 
                 if (AutoAttackSpell.State == SpellState.STATE_READY)

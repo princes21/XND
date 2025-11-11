@@ -246,7 +246,7 @@ namespace LeagueSandbox.GameServer.GameObjects.SpellNS
                 // Regular auto attacks can lose their target due to untargetability and distance.
                 if (CastInfo.IsAutoAttack
                 && (spellTarget != CastInfo.Owner.TargetUnit
-                || Vector2.Distance(spellTarget.Position, CastInfo.Owner.Position) > (CastInfo.Owner.Stats.Range.Total + spellTarget.CollisionRadius) // TODO: Verify if edge-to-edge
+             // || Vector2.Distance(spellTarget.Position, CastInfo.Owner.Position) > (CastInfo.Owner.Stats.Range.Total + spellTarget.CollisionRadius) // TODO: Verify if edge-to-edge
                 || CastInfo.Owner.GetCastSpell() != null
                 || CastInfo.Owner.ChannelSpell != null))
                 {

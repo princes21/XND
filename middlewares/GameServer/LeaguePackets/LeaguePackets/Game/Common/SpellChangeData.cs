@@ -14,5 +14,6 @@ namespace LeaguePackets.Game.Common
         RangeDisplay = 0x5,
         IconIndex = 0x6,
         OffsetTarget = 0x7,
+        Description = 0x8 // TODO
     }
 }

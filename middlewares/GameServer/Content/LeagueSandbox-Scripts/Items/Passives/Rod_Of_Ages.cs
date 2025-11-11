@@ -31,7 +31,7 @@ namespace ItemPassives
             // If target has Banshee's Veil anti-buff, consume it and apply a cooldown so it can only block once per X seconds.
             const float RoA_BANSHEE_COOLDOWN = 60.0f; // X seconds; adjust as needed
 
-            if (Target.HasBuff("AntiRodOfAges"))
+            if (Target.HasBuff("AntiRodOfAges") && owner.HasBuff("AbilityUsed"))
             {
                 if (!Target.HasBuff("RodOfAgesCooldown"))
                 {

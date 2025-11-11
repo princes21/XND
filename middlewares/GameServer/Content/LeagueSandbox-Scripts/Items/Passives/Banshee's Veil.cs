@@ -38,12 +38,14 @@ namespace ItemPassives
 
         public void OnUpdate(float diff)
         {
-            var owner = _owner;
+            if (_owner == null) return; // Safety check
 
-            // Re-arm the anti-ROA shield once cooldown has expired
-            if (!owner.HasBuff("RodOfAgesCooldown") && !owner.HasBuff("AntiRodOfAges"))
+            // Re-arm the anti-ROA shield ONLY when:
+            // 1. Cooldown has expired
+            // 2. Shield is not already active
+            if (!_owner.HasBuff("RodOfAgesCooldown") && !_owner.HasBuff("AntiRodOfAges"))
             {
-                AddBuff("AntiRodOfAges", BANSHEE_COOLDOWN, 1, null, owner, owner, true);
+                AddBuff("AntiRodOfAges", 999.0f, 1, null, _owner, _owner, true); // Long duration, cooldown controls it
             }
         }
 
