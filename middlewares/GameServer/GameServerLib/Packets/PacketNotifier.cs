@@ -671,6 +671,46 @@ namespace PacketDefinitions420
         }
 
         /// <summary>
+        /// Changes transparency of your model, called when you go invisible
+        /// </summary>
+        /// <param name="target">Unit to make invisible</param>
+        /// <param name="fadeId">Fade stack ID</param>
+        /// <param name="fadeTime">Time to fade (in seconds)</param>
+        /// <param name="fadeTargetValue">Target opacity (0.0 = invisible, 1.0 = visible)</param>
+        /// <param name="sendToEnemiesOnly">If true, only sends to enemy teams (for stealth). If false, sends to everyone.</param>
+        public void NotifyAI_SetFadeOut_Push(GameObject o, short fadeId, float time, float value)
+        {
+            time /= 1000f;
+
+            var targetPacket = new SetFadeOut_Push
+            {
+                SenderNetID = o.NetId,
+                FadeId = fadeId,  // ADD THIS - it was missing!
+                FadeTime = time,
+                FadeTargetValue = value,
+            };
+            _packetHandlerManager.BroadcastPacketVision(o, targetPacket.GetBytes(), Channel.CHL_S2C);
+        }
+
+        /// <summary>
+        /// /// </summary>
+        /// <summary>
+        /// Removes a fade effect by its stack ID
+        /// </summary>
+        /// <param name="target">Unit to remove fade from</param>
+        /// <param name="stackID">Fade stack ID to remove</param>
+        public void NotifyAI_SetFadeOut_Pop(GameObject o, short stackID)
+        {
+            var popPacket = new SetFadeOut_Pop
+            {
+                SenderNetID = o.NetId,
+                StackID = stackID
+            };
+
+            _packetHandlerManager.BroadcastPacket(popPacket.GetBytes(), Channel.CHL_S2C);
+        }
+
+        /// <summary>
         /// Sends a packet to the specified team that a part of the map has changed. Known to be used in League for initializing turret vision and collision.
         /// </summary>
         /// <param name="region">Region to add.</param>

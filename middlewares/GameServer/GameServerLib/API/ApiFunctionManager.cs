@@ -691,6 +691,22 @@ namespace LeagueSandbox.GameServer.API
             return toreturn;
         }
 
+        public static void BecomeInvisible(AttackableUnit unit)
+        {
+            // Fix: Add fadeId parameter and provide time and value
+            // fadeId: unique ID for this fade effect (use 1 for simple invisibility)
+            // time: fade time in milliseconds (500 = 0.5 seconds)
+            // value: 0.0 = invisible, 1.0 = visible
+            _game.PacketNotifier.NotifyAI_SetFadeOut_Push(unit, 1, 100f, 0.3f);
+        }
+
+        public static void BecomeVisible(AttackableUnit unit)
+        {
+            // Fix: Correct method name and add required parameters
+            // stackID: same ID used when making invisible (1 in this case)
+            _game.PacketNotifier.NotifyAI_SetFadeOut_Pop(unit, 1);
+        }
+
         //Consider changing this to take bots into account too
         public static List<Champion> GetAllPlayersFromTeam(TeamId team)
         {
