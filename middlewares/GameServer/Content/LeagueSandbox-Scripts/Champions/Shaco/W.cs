@@ -26,7 +26,7 @@ namespace Spells
             var owner = spell.CastInfo.Owner;
             var castrange = spell.GetCurrentCastRange();
             var apbonus = owner.Stats.AbilityPower.Total * 0.2f;
-            var damage = 35 + ((15 * (spell.CastInfo.SpellLevel - 1)) + apbonus); //TODO: Should replace minion AA damage
+            var damage = 285 + ((15 * (spell.CastInfo.SpellLevel - 1)) + (apbonus * 1.1f)); //TODO: Should replace minion AA damage
             var jackduration = 5.0f; //TODO: Split into Active duration and Hidden duration when Invisibility is implemented
             var attspeed = 1 / 1.8f; // 1.8 attacks a second = ~.56 seconds per attack, could not extrapolate from minion stats
             //TODO: Implement Fear buff and ShacoBoxSpell

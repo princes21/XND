@@ -695,9 +695,10 @@ namespace LeagueSandbox.GameServer.API
         {
             // Fix: Add fadeId parameter and provide time and value
             // fadeId: unique ID for this fade effect (use 1 for simple invisibility)
-            // time: fade time in milliseconds (500 = 0.5 seconds)
-            // value: 0.0 = invisible, 1.0 = visible
-            _game.PacketNotifier.NotifyAI_SetFadeOut_Push(unit, 1, 100f, 0.3f);
+            // time: 1000ms (1 second)
+            // allyValue: 0.3f = 30% visible (stealth indicator for allies)
+            // enemyValue: 0.0f = fully invisible (enemies can't see)
+            _game.PacketNotifier.NotifyAI_SetFadeOut_Push(unit, 1, 1000f, 0.3f, 0.0f);
         }
 
         public static void BecomeVisible(AttackableUnit unit)

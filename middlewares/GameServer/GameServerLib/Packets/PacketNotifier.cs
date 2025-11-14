@@ -32,6 +32,7 @@ using LeagueSandbox.GameServer.GameObjects.AttackableUnits.Buildings.AnimatedBui
 using LeagueSandbox.GameServer.GameObjects.AttackableUnits.Buildings;
 using GameServerLib.GameObjects;
 using LeagueSandbox.GameServer.GameObjects.StatsNS;
+using LeagueSandbox.GameServer;
 
 namespace PacketDefinitions420
 {
@@ -673,23 +674,51 @@ namespace PacketDefinitions420
         /// <summary>
         /// Changes transparency of your model, called when you go invisible
         /// </summary>
-        /// <param name="target">Unit to make invisible</param>
+        /// <param name="o">Unit to fade</param>
         /// <param name="fadeId">Fade stack ID</param>
-        /// <param name="fadeTime">Time to fade (in seconds)</param>
-        /// <param name="fadeTargetValue">Target opacity (0.0 = invisible, 1.0 = visible)</param>
-        /// <param name="sendToEnemiesOnly">If true, only sends to enemy teams (for stealth). If false, sends to everyone.</param>
-        public void NotifyAI_SetFadeOut_Push(GameObject o, short fadeId, float time, float value)
+        /// <param name="time">Fade time in milliseconds</param>
+        /// <param name="allyValue">Opacity for allies (0.0-1.0)</param>
+        /// <param name="enemyValue">Opacity for enemies (0.0-1.0)</param>
+        public void NotifyAI_SetFadeOut_Push(GameObject o, short fadeId, float time, float allyValue, float enemyValue)
         {
             time /= 1000f;
 
-            var targetPacket = new SetFadeOut_Push
+            var unitTeam = o.Team;
+
+            // Create packet for allies (partial transparency)
+            var allyPacket = new SetFadeOut_Push
             {
                 SenderNetID = o.NetId,
-                FadeId = fadeId,  // ADD THIS - it was missing!
+                FadeId = fadeId,
                 FadeTime = time,
-                FadeTargetValue = value,
+                FadeTargetValue = allyValue,
             };
-            _packetHandlerManager.BroadcastPacketVision(o, targetPacket.GetBytes(), Channel.CHL_S2C);
+
+            // Create packet for enemies (fully invisible)
+            var enemyPacket = new SetFadeOut_Push
+            {
+                SenderNetID = o.NetId,
+                FadeId = fadeId,
+                FadeTime = time,
+                FadeTargetValue = enemyValue,
+            };
+
+            // Send to each team separately - hardcode the two main teams
+            var teams = new[] { TeamId.TEAM_BLUE, TeamId.TEAM_PURPLE };
+
+            foreach (var team in teams)
+            {
+                if (team == unitTeam)
+                {
+                    // Send transparency packet to allies
+                    _packetHandlerManager.BroadcastPacketTeam(team, allyPacket.GetBytes(), Channel.CHL_S2C);
+                }
+                else
+                {
+                    // Send invisibility packet to enemies
+                    _packetHandlerManager.BroadcastPacketTeam(team, enemyPacket.GetBytes(), Channel.CHL_S2C);
+                }
+            }
         }
 
         /// <summary>

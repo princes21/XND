@@ -30,7 +30,7 @@ namespace Buffs
 
         public void OnActivate(AttackableUnit unit, Buff buff, Spell ownerSpell)
         {
-            StatsModifier.MoveSpeed.PercentBonus -= 0.10f;
+            StatsModifier.MoveSpeed.PercentBonus -= 0.40f;
 
 
             unit.AddStatModifier(StatsModifier);
