@@ -1,11 +1,4 @@
-﻿using GameServerCore.Scripting.CSharp;
-using LeagueSandbox.GameServer.GameObjects.AttackableUnits;
-using LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI;
-using LeagueSandbox.GameServer.GameObjects.SpellNS;
-using LeagueSandbox.GameServer.Scripting.CSharp;
-using System.Numerics;
-
-namespace Spells
+﻿namespace Spells
 {
     public class HallucinateFull : ISpellScript
     {
