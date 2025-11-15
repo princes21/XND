@@ -23,7 +23,7 @@ namespace Characters
                 Minion box = AddMinion(owner, "ShacoBox", "ShacoBox", spellPos, owner.Team);
 
                 float attackRange = box.Stats.Range.Total;
-                float damage = 35 + ((15 * (spell.CastInfo.SpellLevel - 1)) + owner.Stats.AbilityPower.Total * 0.2f);
+                float damage = 285 + ((15 * (spell.CastInfo.SpellLevel - 1)) + owner.Stats.AbilityPower.Total * 0.8f);
                 float attackSpeed = 0.56f;
                 float duration = 5f;
 
