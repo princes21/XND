@@ -1,41 +1,41 @@
+using GameServerCore.Enums;
+using GameServerCore.Scripting.CSharp;
+using LeagueSandbox.GameServer.GameObjects;
+using LeagueSandbox.GameServer.GameObjects.AttackableUnits;
+using LeagueSandbox.GameServer.GameObjects.SpellNS;
+using LeagueSandbox.GameServer.GameObjects.StatsNS;
+using LeagueSandbox.GameServer.Scripting.CSharp;
+
 namespace Buffs
 {
     internal class ShacoCOTGPet : IBuffGameScript
     {
-        public BuffScriptMetaData BuffMetaData { get; set; } = new BuffScriptMetaData
+        public BuffScriptMetaData BuffMetaData { get; set; } = new()
         {
             BuffType = BuffType.INTERNAL,
             BuffAddType = BuffAddType.REPLACE_EXISTING
         };
 
-        public StatsModifier StatsModifier { get; private set; } = new StatsModifier();
+        public StatsModifier StatsModifier { get; private set; } = new();
 
-        float timeSinceLastTick;
-        AttackableUnit Unit;
-        Spell spell;
+        private float timeSinceLastTick;
+        private AttackableUnit unit;
+        private Spell spell;
 
         public void OnActivate(AttackableUnit unit, Buff buff, Spell ownerSpell)
         {
-            var owner = ownerSpell.CastInfo.Owner;
-            Unit = unit;
+            this.unit = unit;
             spell = ownerSpell;
-            //TODO: Set the Ghost stats here
         }
 
-        public void OnDeactivate(AttackableUnit unit, Buff buff, Spell ownerSpell)
-        {
-
-        }
+        public void OnDeactivate(AttackableUnit unit, Buff buff, Spell ownerSpell) { }
 
         public void OnUpdate(float diff)
         {
             timeSinceLastTick += diff;
-
-            if (timeSinceLastTick >= 30000.0)
-            {
-                Unit.TakeDamage(spell.CastInfo.Owner, 10000f, DamageType.DAMAGE_TYPE_TRUE, DamageSource.DAMAGE_SOURCE_INTERNALRAW, DamageResultType.RESULT_NORMAL);
-            }
+            if (timeSinceLastTick >= 30000f)
+                unit.TakeDamage(spell.CastInfo.Owner, 10000f, DamageType.DAMAGE_TYPE_TRUE,
+                              DamageSource.DAMAGE_SOURCE_INTERNALRAW, DamageResultType.RESULT_NORMAL);
         }
     }
 }
-//TODO: Make healing for POST MITIGATION damage

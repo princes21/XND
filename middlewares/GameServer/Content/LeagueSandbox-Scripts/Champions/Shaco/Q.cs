@@ -43,9 +43,11 @@ namespace Spells
             // Buff duration based on Q level
             float duration = 1.5f + 0.5f * (spell.CastInfo.SpellLevel - 1); // Example: lvl1 = 1.5s, lvl2 = 2s, etc.
 
+            AddBuff("Deceive", duration, 1, spell, owner, owner);
             // Particle effect
             AddParticle(owner, null, "JackintheboxPoof2.troy", owner.Position, 2f);
             BecomeInvisible(owner);
+            AddBuff("AbilityUsed", 4.0f, 1, spell, owner, owner);
         }
 
         public void OnSpellChannel(Spell spell) { }

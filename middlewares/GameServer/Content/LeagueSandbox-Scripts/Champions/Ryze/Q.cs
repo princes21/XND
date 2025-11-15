@@ -36,10 +36,16 @@ namespace Spells
             var mana = owner.Stats.ManaPoints.Total * 0.065f;
             var damage = 60 * spell.CastInfo.SpellLevel + ap + mana;
 
-            AddBuff("AbilityUsed", 4f, 1, spell, owner, owner);
+
             target.TakeDamage(owner, damage, DamageType.DAMAGE_TYPE_MAGICAL, DamageSource.DAMAGE_SOURCE_SPELL, false);
             AddParticleTarget(owner, target, "Overload_tar.troy", target);
             AddParticleTarget(owner, target, "Overload_mis.troy", target);
+        }
+
+        public void OnSpellPostCast(Spell spell) 
+        {
+            var owner = spell.CastInfo.Owner as Champion;
+            AddBuff("AbilityUsed", 4f, 1, spell, owner, owner);
         }
     }
 }

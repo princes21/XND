@@ -25,6 +25,7 @@ namespace Spells
         public void OnSpellPostCast(Spell spell)
         {
             var owner = spell.CastInfo.Owner;
+            AddBuff("AbilityUsed", 4.0f, 1, spell, owner, owner);
             var spellPos = new Vector2(spell.CastInfo.TargetPosition.X,
                                        spell.CastInfo.TargetPosition.Z);
 

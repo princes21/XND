@@ -1,75 +1,68 @@
-﻿using LeagueSandbox.GameServer.GameObjects.SpellNS;
-using GameServerLib.GameObjects.AttackableUnits;
+﻿using GameServerCore.Enums;
+using GameServerCore.Scripting.CSharp;
+using LeagueSandbox.GameServer.API;
+using LeagueSandbox.GameServer.GameObjects;
+using LeagueSandbox.GameServer.GameObjects.AttackableUnits;
+using LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI;
+using LeagueSandbox.GameServer.GameObjects.SpellNS;
+using LeagueSandbox.GameServer.GameObjects.SpellNS.Sector;
+using LeagueSandbox.GameServer.GameObjects.StatsNS;
+using LeagueSandbox.GameServer.Scripting.CSharp;
+using static LeagueSandbox.GameServer.API.ApiFunctionManager;
 
 namespace Buffs
 {
     internal class ShacoExplode : IBuffGameScript
     {
-        public BuffScriptMetaData BuffMetaData { get; set; } = new BuffScriptMetaData
+        public BuffScriptMetaData BuffMetaData { get; set; } = new()
         {
-            BuffType = BuffType.COMBAT_ENCHANCER
+            BuffType = BuffType.COMBAT_ENCHANCER,
+            BuffAddType = BuffAddType.RENEW_EXISTING,
+            MaxStacks = 1
         };
-        public BuffAddType BuffAddType => BuffAddType.RENEW_EXISTING;
-        public int MaxStacks => 1;
-        public bool IsHidden => false;
-        private Particle p1;
-        private Particle p2;
-        private Particle p3;
-        private Particle p4;
-        private Particle p5;
-        private Spell originSpell;
-        public StatsModifier StatsModifier { get; private set; } = new StatsModifier();
+
+        public StatsModifier StatsModifier { get; private set; } = new();
 
         private ObjAIBase Owner;
-        public SpellSector DRMundoWAOE;
+        private SpellSector aoe;
 
-        public void OnActivate(AttackableUnit unit, Buff buff, Spell OwnerSpell)
+        public void OnActivate(AttackableUnit unit, Buff buff, Spell ownerSpell)
         {
-            Owner = OwnerSpell.CastInfo.Owner;
-            originSpell = OwnerSpell;
+            Owner = ownerSpell.CastInfo.Owner;
 
-            ApiEventManager.OnSpellHit.AddListener(this, OwnerSpell, TargetExecute, false);
-            var spellPos = new Vector2(originSpell.CastInfo.TargetPositionEnd.X, originSpell.CastInfo.TargetPositionEnd.Z);
-            Owner.AddStatModifier(StatsModifier);
-            p1 = AddParticleTarget(Owner, unit, "Hallucinate_nova.troy",unit, 1f, 1, "");
+            // nova particle
+            AddParticleTarget(Owner, unit, "Hallucinate_nova.troy", unit, 1f);
 
-
-
-            DRMundoWAOE = OwnerSpell.CreateSpellSector(new SectorParameters
+            // 280 radius explosion
+            aoe = ownerSpell.CreateSpellSector(new SectorParameters
             {
                 BindObject = unit,
                 Length = 280f,
-                Tickrate = 2,
+                Tickrate = 1,
                 CanHitSameTargetConsecutively = false,
-                OverrideFlags = SpellDataFlags.AffectEnemies | SpellDataFlags.AffectNeutral | SpellDataFlags.AffectMinions | SpellDataFlags.AffectHeroes,
+                OverrideFlags = SpellDataFlags.AffectEnemies | SpellDataFlags.AffectNeutral |
+                                   SpellDataFlags.AffectMinions | SpellDataFlags.AffectHeroes,
                 Type = SectorType.Area,
-                Lifetime = 1f
+                Lifetime = 0.25f
             });
+
+            ApiEventManager.OnSpellSectorHit.AddListener(this, aoe, OnHit, false);
         }
 
-        public void TargetExecute(Spell spell, AttackableUnit target, SpellMissile missile, SpellSector sector)
+        private void OnHit(SpellSector sector, AttackableUnit target)
         {
-            float AP = Owner.Stats.AbilityPower.Total * 0.45f;
-            float damage = 300f + AP;
-            if (Owner.HasBuff("Liandryowner"))
-            {
-                if (Owner.Team != target.Team && target is AttackableUnit && !(target is BaseTurret) && !(target is ObjAnimatedBuilding))
-                {
-                    AddBuff("Liandry", 3f, 1, spell, target, Owner);
-                }
-            }
-            target.TakeDamage(Owner, damage, DamageType.DAMAGE_TYPE_MAGICAL, DamageSource.DAMAGE_SOURCE_SPELLAOE, false);
+            float ap = Owner.Stats.AbilityPower.Total * 0.45f;
+            float damage = 300f + ap;
+            target.TakeDamage(Owner, damage, DamageType.DAMAGE_TYPE_MAGICAL,
+                              DamageSource.DAMAGE_SOURCE_SPELLAOE, false);
         }
 
-        public void OnDeactivate(AttackableUnit unit, Buff buff, Spell OwnerSpell)
+        public void OnDeactivate(AttackableUnit unit, Buff buff, Spell ownerSpell)
         {
-            RemoveParticle(p1);
-            ApiEventManager.OnSpellHit.RemoveListener(this);
-            DRMundoWAOE.SetToRemove();
+            aoe.SetToRemove();
+            ApiEventManager.OnSpellSectorHit.RemoveListener(this);
         }
 
-        public void OnUpdate(float diff)
-        {
-        }
+        public void OnUpdate(float diff) { }
     }
 }

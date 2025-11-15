@@ -1,52 +1,54 @@
+using GameServerCore.Enums;
+using GameServerCore.Scripting.CSharp;
+using LeagueSandbox.GameServer.API;
+using LeagueSandbox.GameServer.GameObjects;
+using LeagueSandbox.GameServer.GameObjects.AttackableUnits;
 using LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI;
 using LeagueSandbox.GameServer.GameObjects.SpellNS;
+using LeagueSandbox.GameServer.GameObjects.StatsNS;
+using LeagueSandbox.GameServer.Scripting.CSharp;
+using static LeagueSandbox.GameServer.API.ApiFunctionManager;
 
 namespace Buffs
 {
     internal class Deceive : IBuffGameScript
     {
-        public BuffScriptMetaData BuffMetaData { get; set; } = new BuffScriptMetaData
+        public BuffScriptMetaData BuffMetaData { get; set; } = new()
         {
             BuffType = BuffType.INVISIBILITY,
             BuffAddType = BuffAddType.RENEW_EXISTING
         };
-        public BuffType BuffType => BuffType.DAMAGE;
-        public BuffAddType BuffAddType => BuffAddType.RENEW_EXISTING;
-        public int MaxStacks => 1;
-        public bool IsHidden => false;
 
-        public StatsModifier StatsModifier { get; private set; } = new StatsModifier();
+        public StatsModifier StatsModifier { get; private set; } = new();
 
-        Buff thisBuff;
-        Particle p;
+        private Buff thisBuff;
+
         public void OnActivate(AttackableUnit unit, Buff buff, Spell ownerSpell)
         {
             thisBuff = buff;
             if (unit is Champion champion)
             {
                 ownerSpell.SetSpellToggle(true);
-                ApiEventManager.OnPreAttack.AddListener(this, champion, OnPreAttack, true);
+                ApiEventManager.OnPreAttack.AddListener(this, champion, BreakStealth, true);
             }
             unit.AddStatModifier(StatsModifier);
             BecomeInvisible(unit);
         }
-        public void OnPreAttack(Spell spell)
-        {
 
+        private void BreakStealth(Spell spell)
+        {
+            thisBuff?.DeactivateBuff();
         }
 
         public void OnDeactivate(AttackableUnit unit, Buff buff, Spell ownerSpell)
         {
-            var champion = unit as Champion;
             ownerSpell.SetCooldown(ownerSpell.GetCooldown());
-            champion.GetSpell(ownerSpell.SpellName).SetSpellToggle(false);
-            BecomeVisible(unit);
+            if (unit is Champion champ)
+                champ.GetSpell(ownerSpell.SpellName).SetSpellToggle(false);
 
-            unit.SetStatus(StatusFlags.NoRender, false);
+            ForceVisible(unit);
         }
 
-        public void OnUpdate(float diff)
-        {
-        }
+        public void OnUpdate(float diff) { }
     }
 }

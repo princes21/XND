@@ -693,20 +693,61 @@ namespace LeagueSandbox.GameServer.API
 
         public static void BecomeInvisible(AttackableUnit unit)
         {
-            // Fix: Add fadeId parameter and provide time and value
-            // fadeId: unique ID for this fade effect (use 1 for simple invisibility)
-            // time: 1000ms (1 second)
-            // allyValue: 0.3f = 30% visible (stealth indicator for allies)
-            // enemyValue: 0.0f = fully invisible (enemies can't see)
+            var unitTeam = unit.Team;
+            var teams = GetTeams();
+
+            // Apply fade effect (transparency)
             _game.PacketNotifier.NotifyAI_SetFadeOut_Push(unit, 1, 1000f, 0.3f, 0.0f);
+
+            // Hide from enemy teams
+            foreach (var team in teams)
+            {
+                if (team != unitTeam && team != TeamId.TEAM_NEUTRAL)
+                {
+                    // Hide health bar from enemies
+                    _game.PacketNotifier.NotifyLeaveLocalVisibilityClient(unit, team);
+                    // Hide unit from enemies (removes model, shadow, outline)
+                    _game.PacketNotifier.NotifyLeaveVisibilityClient(unit, team);
+                    // Set visibility flag
+                    unit.SetVisibleByTeam(team, false);
+                }
+            }
         }
+
 
         public static void BecomeVisible(AttackableUnit unit)
         {
-            // Fix: Correct method name and add required parameters
-            // stackID: same ID used when making invisible (1 in this case)
+            var unitTeam = unit.Team;
+            var teams = GetTeams();
+
+            // Remove fade effect
             _game.PacketNotifier.NotifyAI_SetFadeOut_Pop(unit, 1);
+
+            // Show to all teams
+            foreach (var team in teams)
+            {
+                if (team != TeamId.TEAM_NEUTRAL)
+                {
+                    // Restore visibility flag
+                    unit.SetVisibleByTeam(team, true);
+
+                    // Show health bar to all teams
+                    _game.PacketNotifier.NotifyEnterLocalVisibilityClient(unit);
+                    // Show unit to all teams (if they have vision)
+                    _game.PacketNotifier.NotifyVisibilityChange(unit, team, becameVisible: true);
+                }
+            }
         }
+
+        public static void ForceVisible(AttackableUnit unit)
+        {
+            // pop ALL possible fade IDs + force full opacity
+            _game.PacketNotifier.NotifyAI_SetFadeOut_Pop(unit, 1);
+            _game.PacketNotifier.NotifyAI_SetFadeOut_Pop(unit, 2);
+            _game.PacketNotifier.NotifyAI_SetFadeOut_Pop(unit, 3);
+            _game.PacketNotifier.NotifyAI_SetFadeOut_Push(unit, 999, 0f, 1.0f, 1.0f); // 100 % to everyone
+        }
+
 
         //Consider changing this to take bots into account too
         public static List<Champion> GetAllPlayersFromTeam(TeamId team)
