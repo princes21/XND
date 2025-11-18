@@ -46,7 +46,7 @@ namespace Spells
             AddBuff("Deceive", duration, 1, spell, owner, owner);
             // Particle effect
             AddParticle(owner, null, "JackintheboxPoof2.troy", owner.Position, 2f);
-            BecomeInvisible(owner);
+
             AddBuff("AbilityUsed", 4.0f, 1, spell, owner, owner);
         }
 

@@ -295,8 +295,26 @@ namespace PacketDefinitions420
         {
             var data = packet.Data;
 
+            if (peer == null)
+            {
+                Console.WriteLine($"[WARNING] HandlePacket called with null peer");
+                return false;
+            }
+
+            if (packet == null)
+            {
+                Console.WriteLine($"[WARNING] HandlePacket called with null packet for peer {peer.UserData}");
+                return false;
+            }
+
+            if (data == null)
+            {
+                Console.WriteLine($"[WARNING] Packet has null Data for peer {peer.UserData}, channel {channelId}");
+                return false;
+            }
+
             // if channel id is HANDSHAKE we should initialize blowfish key and return
-            if(channelId == Channel.CHL_HANDSHAKE)
+            if (channelId == Channel.CHL_HANDSHAKE)
             {
                 return HandleHandshake(peer, data);
             }

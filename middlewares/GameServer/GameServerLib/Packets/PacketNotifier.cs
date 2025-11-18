@@ -4100,7 +4100,12 @@ namespace PacketDefinitions420
         /// Sends a notification that the object has entered the team's scope and fully synchronizes its state.
         /// </summary>
         void NotifyEnterTeamVision(GameObject obj, TeamId team, int userId = -1, GamePacket spawnPacket = null)
-        {
+        {   // Check invisibility FIRST, before constructing any packets
+            // If object is an invisible unit and team is enemy, don't reveal
+            if (obj is AttackableUnit unit && unit.IsInvisible && team != unit.Team)
+            {
+                return; // Don't send visibility packet to enemy team
+            }
             if (obj is AttackableUnit u)
             {
                 var visibilityPacket = spawnPacket as OnEnterVisibilityClient;
@@ -4122,6 +4127,7 @@ namespace PacketDefinitions420
                         u.Replication.GetData(false)
                     }
                 };
+
 
                 if (userId < 0)
                 {

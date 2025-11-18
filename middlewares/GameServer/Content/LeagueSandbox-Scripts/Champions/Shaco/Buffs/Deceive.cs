@@ -80,7 +80,7 @@ namespace Buffs
                 }
             }
 
-            ForceVisible(unit);
+            BecomeVisible(unit);
         }
 
         public void OnUpdate(float diff) { }

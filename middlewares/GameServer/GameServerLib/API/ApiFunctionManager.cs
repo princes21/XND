@@ -693,11 +693,12 @@ namespace LeagueSandbox.GameServer.API
 
         public static void BecomeInvisible(AttackableUnit unit)
         {
+            unit.IsInvisible = true;
             var unitTeam = unit.Team;
             var teams = GetTeams();
 
             // Apply fade effect (transparency)
-            _game.PacketNotifier.NotifyAI_SetFadeOut_Push(unit, 1, 1000f, 0.3f, 0.0f);
+            _game.PacketNotifier.NotifyAI_SetFadeOut_Push(unit, 1, 100f, 0.3f, 0.0f);
 
             // Hide from enemy teams
             foreach (var team in teams)
@@ -717,11 +718,12 @@ namespace LeagueSandbox.GameServer.API
 
         public static void BecomeVisible(AttackableUnit unit)
         {
+            unit.IsInvisible = false;
             var unitTeam = unit.Team;
             var teams = GetTeams();
 
             // Remove fade effect
-            _game.PacketNotifier.NotifyAI_SetFadeOut_Pop(unit, 1);
+            _game.PacketNotifier.NotifyAI_SetFadeOut_Push(unit, 1, 100f, 1.0f, 1.0f);
 
             // Show to all teams
             foreach (var team in teams)
