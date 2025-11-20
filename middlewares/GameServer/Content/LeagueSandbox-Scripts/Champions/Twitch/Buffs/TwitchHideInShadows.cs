@@ -45,8 +45,7 @@ namespace Buffs
         }
         public void OnLaunchAttack(Spell spell)
         {
-            RemoveBuff(owner, "Invisibility");
-            RemoveBuff(owner, "Targetable");
+            BecomeVisible(owner);
 			if (thisBuff != null && thisBuff.StackCount != 0 && !thisBuff.Elapsed())
             {
             thisBuff.DeactivateBuff();
@@ -62,6 +61,7 @@ namespace Buffs
             }
             if (unit is ObjAIBase ai)
             {
+                BecomeVisible(owner);
                 AddBuff("TwitchHideInShadowsBuff", 5f, 1, Spell, ai, ai);
                 AddParticle(ai, null, "Twitch_Base_Q_Invisiible_Outro", ai.Position, lifetime: buff.Duration);
             }

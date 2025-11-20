@@ -28,6 +28,8 @@ namespace Buffs
             
             StatsModifier.AttackDamage.FlatBonus = 165;
             StatsModifier.MoveSpeed.PercentBonus = 0.15f;
+            StatsModifier.Range.FlatBonus = 250f;
+            StatsModifier.CriticalDamage.PercentBonus = 0.25f;
             unit.AddStatModifier(StatsModifier);
         }
 

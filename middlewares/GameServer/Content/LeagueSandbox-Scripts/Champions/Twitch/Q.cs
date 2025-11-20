@@ -27,8 +27,7 @@ namespace Spells
             var owner = spell.CastInfo.Owner;
             owner.CancelAutoAttack(true);
             AddBuff("TwitchHideInShadows", 9.0f, 1, spell, owner, owner);
-            AddBuff("Invisibility", 9, 1, spell, owner, owner);
-            AddBuff("Targetable", 9, 1, spell, owner, owner);
+            BecomeInvisible(owner);
             AddBuff("AbilityUsed", 9, 1, spell, owner, owner);
         }
     }

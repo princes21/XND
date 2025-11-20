@@ -725,18 +725,19 @@ namespace LeagueSandbox.GameServer.API
             // Remove fade effect
             _game.PacketNotifier.NotifyAI_SetFadeOut_Push(unit, 1, 100f, 1.0f, 1.0f);
 
-            // Show to all teams
+            // Update visibility flags and notify teams that have vision
             foreach (var team in teams)
             {
                 if (team != TeamId.TEAM_NEUTRAL)
                 {
-                    // Restore visibility flag
+                    // Restore visibility flag (allows the unit to be seen IF team has vision)
                     unit.SetVisibleByTeam(team, true);
 
-                    // Show health bar to all teams
-                    _game.PacketNotifier.NotifyEnterLocalVisibilityClient(unit);
-                    // Show unit to all teams (if they have vision)
-                    _game.PacketNotifier.NotifyVisibilityChange(unit, team, becameVisible: true);
+                    // Only notify if the team actually has vision at this location
+                    if (_game.ObjectManager.TeamHasVisionOn(team, unit))
+                    {
+                        _game.PacketNotifier.NotifyVisibilityChange(unit, team, becameVisible: true);
+                    }
                 }
             }
         }
@@ -775,6 +776,7 @@ namespace LeagueSandbox.GameServer.API
             // Allow the user to move the champion
             unit.SetDashingState(false);
         }
+
 
         /// <summary>
         /// Forces the specified unit to perform a forced movement which ends at a specified position.

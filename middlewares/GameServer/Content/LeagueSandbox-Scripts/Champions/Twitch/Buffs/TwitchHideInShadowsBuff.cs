@@ -27,7 +27,7 @@ namespace Buffs
 		ObjAIBase owner;
 
         public void OnActivate(AttackableUnit unit, Buff buff, Spell ownerSpell)
-        {
+        {   
 			Spell = ownerSpell;
             thisBuff = buff;
 			owner = ownerSpell.CastInfo.Owner as Champion;
