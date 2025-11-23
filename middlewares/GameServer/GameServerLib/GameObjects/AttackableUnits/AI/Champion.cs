@@ -28,18 +28,12 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI
         private List<ToolTipData> _tipsChanged;
         public Shop Shop { get; protected set; }
         public float RespawnTimer { get; private set; }
-        
-        private const float ASSIST_TIMEOUT = 10000f; // 10 seconds
-
         public int DeathSpree { get; set; } = 0;
         public int KillSpree { get; set; } = 0;
         public float GoldFromMinions { get; set; }
         public RuneCollection RuneList { get; }
         public TalentInventory TalentInventory { get; set; }
         public ChampionStats ChampStats { get; private set; } = new ChampionStats();
-
-        private Dictionary<uint, DamageRecord> _recentDamagers = new Dictionary<uint, DamageRecord>();
-
 
         public byte SkillPoints { get; set; }
 
@@ -416,79 +410,77 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI
         {
             var mapScript = _game.Map.MapScript;
             var mapScriptMetaData = mapScript.MapScriptMetadata;
+            var mapData = _game.Map.MapData;
 
             ApiEventManager.OnDeath.Publish(data.Unit, data);
+
             RespawnTimer = 2000f;
             ChampStats.Deaths += 1;
 
             var cKiller = data.Killer as Champion;
+
             if (cKiller == null && _championHitFlagTimer > 0)
             {
                 cKiller = _game.ObjectManager.GetObjectById(_playerHitId) as Champion;
-                _logger.Debug("Killed by turret, minion or monster, but still give gold to the enemy.");
+                _logger.Debug("Killed by turret, minion or monster, but still  give gold to the enemy.");
             }
 
             if (cKiller == null)
             {
                 _game.PacketNotifier.NotifyNPC_Hero_Die(data);
                 EventHistory.Clear();
-                _recentDamagers.Clear();
                 return;
             }
 
-            // Populate assists BEFORE calculating gold
-            data.Assists = GetAssists(cKiller);
-
             ApiEventManager.OnKill.Publish(data.Killer, data);
 
-            // Calculate gold (your existing code)
+            // TODO: Find out if we can unhardcode some of the fractions used here.
             var gold = mapScriptMetaData.ChampionBaseGoldValue;
-            // ... your kill streak calculations ...
+            if (KillSpree > 1)
+            {
+                gold = Math.Min(gold * (float)Math.Pow(7f / 6f, KillSpree - 1), mapScriptMetaData.ChampionMaxGoldValue);
+            }
+            else if (KillSpree == 0 & DeathSpree >= 1)
+            {
+                gold *= (11f / 12f);
+
+                if (DeathSpree > 1)
+                {
+                    gold = Math.Max(gold * (float)Math.Pow(0.8f, DeathSpree / 2), mapScriptMetaData.ChampionMinGoldValue);
+                }
+                DeathSpree++;
+            }
 
             if (!mapScript.HasFirstBloodHappened)
             {
                 gold += mapScript.MapScriptMetadata.FirstBloodExtraGold;
                 mapScript.HasFirstBloodHappened = true;
+
             }
 
-            // Give gold to killer
-            cKiller.AddGold(this, gold);
-            cKiller.GoldFromMinions = 0;
-            cKiller.ChampStats.Kills++;
-            cKiller.KillSpree++;
-            cKiller.DeathSpree = 0;
-
-            // Process assists
-            if (data.Assists.Count > 0)
+            /*foreach(var unit in data.Assists)
             {
-                float assistGold = gold * 0.5f / data.Assists.Count; // Split 50% of kill gold among assists
-
-                foreach (var assister in data.Assists)
+                var deathAssist = new OnDeathAssist
                 {
-                    var deathAssist = new OnDeathAssist
-                    {
-                        AtTime = _game.GameTime,
-                        PhysicalDamage = 0.0f, // You can track this if needed
-                        MagicalDamage = 0.0f,
-                        TrueDamage = 0.0f,
-                        PercentageOfAssist = 1.0f / data.AssistCount,
-                        OrginalGoldReward = gold,
-                        KillerNetID = data.Killer.NetId,
-                        OtherNetID = data.Unit.NetId
-                    };
+                    AtTime = _game.GameTime,
+                    PhysicalDamage = 0.0f,
+                    MagicalDamage = 0.0f,
+                    TrueDamage = 0.0f,
+                    PercentageOfAssist = 1 / data.AssistCount,
+                    OrginalGoldReward = gold,
+                    KillerNetID = data.Killer.NetId,
+                    OtherNetID = data.Unit.NetId
+                };
+                _game.PacketNotifier.NotifyOnEvent(deathAssist, unit.NetId)
+            }*/
 
-                    _game.PacketNotifier.NotifyOnEvent(deathAssist, assister);
-                    assister.AddGold(this, assistGold);
-                    assister.ChampStats.Assists++;
-                }
-            }
-
-            // Send kill/death notifications
-            var championDie = new OnChampionDie
-            {
-                OtherNetID = data.Killer.NetId,
-                GoldGiven = gold,
+            var championDie = new OnChampionDie 
+            { 
+                OtherNetID = data.Killer.NetId, 
+                GoldGiven = gold, 
+                //TODO: Implement Assists here;
             };
+
             var championKill = new OnChampionKill
             {
                 OtherNetID = data.Unit.NetId
@@ -497,43 +489,25 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI
             _game.PacketNotifier.NotifyOnEvent(championDie, this);
             _game.PacketNotifier.NotifyOnEvent(championKill, data.Killer);
 
+
+            cKiller.AddGold(this, gold);
+
+            cKiller.GoldFromMinions = 0;
+            cKiller.ChampStats.Kills++;
+            cKiller.KillSpree++;
+            cKiller.DeathSpree = 0;
+
             KillSpree = 0;
             DeathSpree++;
 
+            //Remove all buffs that should be removed on death here.
+
+            //CORE_INFO("After: getGoldFromChamp: %f Killer: %i Victim: %i", gold, cKiller.killDeathCounter,this.killDeathCounter);
             _game.PacketNotifier.NotifyNPC_Hero_Die(data);
             EventHistory.Clear();
-            _recentDamagers.Clear(); // Clear damage tracking on death
-
+            
             SetDashingState(false, MoveStopReason.Death);
             _game.ObjectManager.StopTargeting(this);
-        }
-
-        private List<Champion> GetAssists(Champion killer)
-        {
-            var currentTime = _game.GameTime;
-            var assists = new List<Champion>();
-
-            foreach (var record in _recentDamagers.Values)
-            {
-                // Don't count the killer as an assist
-                if (record.Damager.NetId == killer.NetId)
-                    continue;
-
-                // Only count recent damage (within last 10 seconds)
-                if (currentTime - record.LastDamageTime <= ASSIST_TIMEOUT)
-                {
-                    assists.Add(record.Damager);
-                }
-            }
-
-            return assists;
-        }
-
-        private class DamageRecord
-        {
-            public Champion Damager;
-            public float LastDamageTime;
-            public float TotalDamage;
         }
 
         private T CreateEventForHistory<T>(AttackableUnit source, IEventSource sourceScript) where T: ArgsForClient, new()
@@ -600,68 +574,28 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI
         public override void TakeDamage(DamageData damageData, DamageResultType damageText, IEventSource sourceScript = null)
         {
             base.TakeDamage(damageData, damageText, sourceScript);
+
             _championHitFlagTimer = 15 * 1000; //15 seconds timer, so when you get executed the last enemy champion who hit you gets the gold
             _playerHitId = damageData.Attacker.NetId;
             //CORE_INFO("15 second execution timer on you. Do not get killed by a minion, turret or monster!");
 
-            // Track damage for assists
-            if (damageData.Attacker is Champion championAttacker && championAttacker.Team != this.Team)
-            {
-                if (!_recentDamagers.ContainsKey(championAttacker.NetId))
-                {
-                    _recentDamagers[championAttacker.NetId] = new DamageRecord
-                    {
-                        Damager = championAttacker,
-                        LastDamageTime = _game.GameTime,
-                        TotalDamage = damageData.Damage
-                    };
-                }
-                else
-                {
-                    var record = _recentDamagers[championAttacker.NetId];
-                    record.LastDamageTime = _game.GameTime;
-                    record.TotalDamage += damageData.Damage;
-                }
-            }
-
             var e = CreateEventForHistory<OnDamageGiven>(damageData.Attacker, sourceScript);
-            if (e != null)
+            if(e != null)
             {
-                if (damageData.DamageType == DamageType.DAMAGE_TYPE_MAGICAL)
+                if(damageData.DamageType == DamageType.DAMAGE_TYPE_MAGICAL)
                 {
                     e.MagicalDamage = damageData.Damage;
                 }
-                else if (damageData.DamageType == DamageType.DAMAGE_TYPE_PHYSICAL)
+                else if(damageData.DamageType == DamageType.DAMAGE_TYPE_PHYSICAL)
                 {
                     e.PhysicalDamage = damageData.Damage;
                 }
-                else if (damageData.DamageType == DamageType.DAMAGE_TYPE_TRUE)
+                else if(damageData.DamageType == DamageType.DAMAGE_TYPE_TRUE)
                 {
                     e.TrueDamage = damageData.Damage;
                 }
                 //TODO: handle mixed damage?
             }
-        }
-
-        private List<uint> GetAssistNetIDs(Champion killer)
-        {
-            var currentTime = _game.GameTime;
-            var assistNetIDs = new List<uint>();
-
-            foreach (var record in _recentDamagers.Values)
-            {
-                // Don't count the killer as an assist
-                if (record.Damager.NetId == killer.NetId)
-                    continue;
-
-                // Only count recent damage (within last 10 seconds)
-                if (currentTime - record.LastDamageTime <= ASSIST_TIMEOUT)
-                {
-                    assistNetIDs.Add(record.Damager.NetId);
-                }
-            }
-
-            return assistNetIDs;
         }
 
         public void UpdateSkin(int skinNo)
