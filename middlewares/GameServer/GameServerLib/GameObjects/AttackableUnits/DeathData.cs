@@ -1,5 +1,7 @@
 ﻿using GameServerCore.Enums;
 using LeagueSandbox.GameServer.GameObjects.AttackableUnits;
+using LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI;
+using System.Collections.Generic;
 
 namespace GameServerLib.GameObjects.AttackableUnits
 {
@@ -34,5 +36,7 @@ namespace GameServerLib.GameObjects.AttackableUnits
         /// Time until death finishes (fade-out duration?).
         /// </summary>
         public float DeathDuration { get; set; }
+        public List<Champion> Assists { get; set; } = new List<Champion>();
+        public int AssistCount => Assists?.Count ?? 0;
     }
 }
