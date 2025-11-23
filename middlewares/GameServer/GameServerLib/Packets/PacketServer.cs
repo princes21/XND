@@ -5,6 +5,8 @@ using System;
 using Channel = GameServerCore.Packets.Enums.Channel;
 using Version = LENet.Version;
 using LeagueSandbox.GameServer;
+using System.Diagnostics;
+using System.Diagnostics.Tracing;
 
 namespace PacketDefinitions420
 {
@@ -74,6 +76,7 @@ namespace PacketDefinitions420
                     case EventType.RECEIVE:
                         {
                             var channel = (Channel)enetEvent.ChannelID;
+                            var packet = enetEvent.Packet;
                             PacketHandlerManager.HandlePacket(enetEvent.Peer, enetEvent.Packet, channel);
                             // Clean up the packet now that we're done using it.
                             //enetEvent.Packet.Dispose();

@@ -13,6 +13,10 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <EditAndContinueEnabled>true</EditAndContinueEnabled>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.6.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />

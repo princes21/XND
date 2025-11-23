@@ -92,7 +92,20 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits
         public int CurrentWaypointKey { get; protected set; }
         public Vector2 CurrentWaypoint
         {
-            get { return Waypoints[CurrentWaypointKey]; }
+            get
+            {
+                if (Waypoints == null || Waypoints.Count == 0)
+                {
+                    return Vector2.Zero; // or throw a meaningful exception
+                }
+
+                if (CurrentWaypointKey < 0 || CurrentWaypointKey >= Waypoints.Count)
+                {
+                    return Vector2.Zero; // or handle appropriately
+                }
+
+                return Waypoints[CurrentWaypointKey];
+            }
         }
         public bool PathHasTrueEnd { get; private set; } = false;
         public Vector2 PathTrueEnd { get; private set; }
@@ -250,6 +263,13 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits
             }
 
             Replication.Update();
+
+            // ADD THIS: Send replication if anything changed
+            if (Replication.Changed)
+            {
+                _game.PacketNotifier.NotifyOnReplication(this, partial: true);
+                Replication.MarkAsUnchanged();
+            }
 
             if (CanMove())
             {
@@ -465,6 +485,8 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits
         public void AddStatModifier(StatsModifier statModifier)
         {
             Stats.AddModifier(statModifier);
+            Replication.Update();
+
         }
 
         /// <summary>
