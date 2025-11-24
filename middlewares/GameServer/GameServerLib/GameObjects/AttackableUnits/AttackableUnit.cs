@@ -571,9 +571,9 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits
             var attackerStats = damageData.Attacker.Stats;
             var type = damageData.DamageType;
             var source = damageData.DamageSource;
-            if (!CanTakeDamage(type))
+            if (this is Champion c && damageData.Attacker is Champion cAttacker)
             {
-                return;
+                c.AddAssistMarker(cAttacker, 10.0f, damageData);
             }
             ConsumeShields(damageData);
             var postMitigationDamage = damageData.PostMitigationDamage;
@@ -676,7 +676,7 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits
                         var expPerChamp = obj.Stats.ExpGivenOnDeath.Total / champs.Count;
                         foreach (var c in champs)
                         {
-                            //c.AddExperience(expPerChamp);
+                            c.AddExperience(expPerChamp);
                         }
                     }
                 }
@@ -687,7 +687,7 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits
                 //Monsters give XP exclusively to the killer
                 if (data.Unit is Monster)
                 {
-                    //champion.AddExperience(data.Unit.Stats.ExpGivenOnDeath.Total);
+                    champion.AddExperience(data.Unit.Stats.ExpGivenOnDeath.Total);
                 }
 
                 champion.OnKill(data);

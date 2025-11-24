@@ -21,6 +21,7 @@ using LeagueSandbox.GameServer.Handlers;
 using GameServerCore.Packets.PacketDefinitions;
 using GameServerCore.Packets.PacketDefinitions.Requests;
 using LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI;
+using GameServerLib.Handlers;
 
 namespace LeagueSandbox.GameServer
 {
@@ -160,6 +161,7 @@ namespace LeagueSandbox.GameServer
             ApiMapFunctionManager.SetGame(this, Map as MapScriptHandler);
             ApiFunctionManager.SetGame(this);
             ApiEventManager.SetGame(this);
+            ChampionDeathHandler.Init(this);
             IsRunning = false;
 
             Map.Init();
