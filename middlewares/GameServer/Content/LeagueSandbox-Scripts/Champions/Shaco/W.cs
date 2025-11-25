@@ -33,6 +33,8 @@ namespace Spells
                             owner.Team, aiPaused: true);
             AddParticle(owner, null, "JackintheboxPoof", spellPos);
             BecomeInvisible(box);
+            box.SetStatus(StatusFlags.Targetable, false);
+
 
             hasTriggered = false;
             scanTimer = 0f;
@@ -62,6 +64,8 @@ namespace Spells
         private void TriggerBox(AttackableUnit target)
         {
             BecomeVisible(box);
+            box.SetStatus(StatusFlags.Targetable, true);
+
 
             var fearDur = 0.5f + 0.25f * (box.Owner.Spells[1].CastInfo.SpellLevel - 1);
             AddBuff("Fear", fearDur, 1, box.Owner.Spells[1], target, box.Owner);
@@ -69,8 +73,8 @@ namespace Spells
             box.PauseAI(false);
             box.SetTargetUnit(target);
 
-            // auto-die after 5 s
-            CreateTimer(5f, () =>
+            // auto-die after 300 s
+            CreateTimer(300f, () =>
             {
                 if (!box.IsDead)
                     box.TakeDamage(box.Owner, 1000f, DamageType.DAMAGE_TYPE_TRUE,
