@@ -411,7 +411,7 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI
         public override void Die(DeathData data)
         {
             IsDead = true;
-            RespawnTimer = 2000;
+            RespawnTimer = (GetDeathTimerPerDeath() * ChampStats.Deaths) + 2000; // 2 second base
             ChampStats.Deaths++;
 
             //Check order of operations
@@ -432,6 +432,40 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI
 
             _game.PacketNotifier.NotifyNPC_Hero_Die(data);
             EventHistory.Clear();
+        }
+
+        public float GetDeathTimerPerDeath()
+        {
+            float currentMinutes = _game.GetCurrentMinutes();
+
+            // Base timer per death (linear scaling before minute 40)
+            if (currentMinutes < 10)
+            {
+                return 50f;
+            }
+            else if (currentMinutes < 20)
+            {
+                return 200f;
+            }
+            else if (currentMinutes < 30)
+            {
+                return 250f;
+            }
+            else if (currentMinutes < 40)
+            {
+                return 300f;
+            }
+            else // 40+ minutes: exponential scaling based on time
+            {
+                // Start at 350ms at minute 40, scale up gradually
+                float minutesPast40 = currentMinutes - 40f;
+
+                // Exponential growth factor: gentle at first, steeper later
+                // At 40min: ~350ms, at 45min: ~550ms, at 50min: ~900ms, at 55min: ~1500ms
+                float timeMultiplier = 350f + (minutesPast40 * minutesPast40 * 4f);
+
+                return timeMultiplier;
+            }
         }
 
 

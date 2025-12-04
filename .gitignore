@@ -31,3 +31,4 @@ middlewares/GameServer/Content/LeagueSandbox-Default/3024.json
 middlewares/GameServer/Content/LeagueSandbox-Default/3025.json
 middlewares/GameServer/Content/LeagueSandbox-Default/3026.json
 middlewares/GameServer/Content/LeagueSandbox-Default/3027.json
+*.json

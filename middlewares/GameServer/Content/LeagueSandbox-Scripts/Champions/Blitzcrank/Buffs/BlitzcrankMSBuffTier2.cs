@@ -11,7 +11,7 @@ using static LeagueSandbox.GameServer.API.ApiFunctionManager;
 
 namespace Buffs
 {
-    class BlitzcrankSlowTier2 : IBuffGameScript
+    class BlitzcrankMSBuffTier2 : IBuffGameScript
     {
         public BuffScriptMetaData BuffMetaData { get; set; } = new BuffScriptMetaData
         {
@@ -26,7 +26,7 @@ namespace Buffs
         {
             if (unit is ObjAIBase)
             {
-                StatsModifier.MoveSpeed.PercentBonus -= 0.3f;
+                StatsModifier.MoveSpeed.PercentBonus = 0.3f;
                 unit.AddStatModifier(StatsModifier);
             }
         }
@@ -35,6 +35,8 @@ namespace Buffs
         {
             if (unit is ObjAIBase)
             {
+
+
             }
         }
     }

@@ -23,72 +23,96 @@ namespace CharScripts
         // 0 = Normal, 1 = Light Slow, 2 = Heavy Slow, 3 = Stunned
         int _currentTier = 0;
 
-        // Time management variables
-        float _lastTickTime = 0f;
-        const float TICK_INTERVAL = 0.25f; // Check mana 4 times a second (sufficient and saves performance)
+        public StatsModifier StatsModifier { get; private set; } = new StatsModifier();
+
 
         public void OnActivate(ObjAIBase owner, Spell spell = null)
         {
             _owner = owner;
             ApiEventManager.OnLaunchAttack.AddListener(this, owner, OnLaunchAttack, false);
-
+            if (_owner is ObjAIBase)
+            {
+                StatsModifier.MoveSpeed.PercentBonus = 0f;
+                _owner.AddStatModifier(StatsModifier);
+            }
             // Initialize state
             _currentTier = 0;
-            _lastTickTime = 0f;
         }
 
         public void OnUpdate(float diff)
         {
             if (_owner == null || _owner.IsDead) return;
 
-            // --- 2. CALCULATE NEW TIER ---
             float percentMana = (_owner.Stats.CurrentMana / _owner.Stats.ManaPoints.Total) * 100f;
             int newTier = 0;
 
-            // Determine which tier we SHOULD be in right now
-            if (percentMana < 5f) newTier = 3; // Stun
-            else if (percentMana < 15f) newTier = 2; // Heavy Slow
-            else if (percentMana < 30f) newTier = 1; // Light Slow
-            else newTier = 0; // Healthy
+            // Determine tier (0 = best, 5 = worst)
+            if (percentMana < 5f) newTier = 5;      // Stun
+            else if (percentMana < 15f) newTier = 4; // Heavy Slow (-50%)
+            else if (percentMana < 30f) newTier = 3; // Light Slow (-30%)
+            else if (percentMana < 50f) newTier = 2; // Normal (no buff)
+            else if (percentMana < 80f) newTier = 1; // Light MS (+30%)
+            else newTier = 0;                        // Heavy MS (+50%)
 
-            // --- 3. STATE CHANGE ONLY ---
-            // Crucial Fix: We ONLY modify stats if the Tier has actually changed.
-            // This stops us from fighting the other script every frame.
             if (newTier != _currentTier)
             {
-                ApplyTierChange(_currentTier, newTier, spell, _owner);
+                ApplyTierChange(_currentTier, newTier);
                 _currentTier = newTier;
             }
         }
 
-        void ApplyTierChange(int oldTier, int newTier, Spell spell, ObjAIBase owner)
+        void ApplyTierChange(int oldTier, int newTier)
         {
-            // B. APPLY NEW PENALTY
-            if (newTier == 1 && _owner.GetBuffWithName("BlitzcrankSlowTier1") == null)
-            {
-                AddBuff("BlitzcrankSlowTier1", 5.0f, 1, spell, _owner, _owner);
-            }
+            // STEP 1: Remove ALL old buffs
+            RemoveAllTierBuffs();
 
-            if (newTier == 2 && _owner.GetBuffWithName("BlitzcrankSlowTier2") == null)
+            // STEP 2: Apply ONLY the new tier's buff
+            switch (newTier)
             {
-                AddBuff("BlitzcrankSlowTier2", 5.0f, 1, spell, _owner, _owner);
-            }
-            if (newTier == 3)
-            {
-                // Stun Logic: Apply buff if not present
-                if (_owner.GetBuffWithName("Stun") == null)
-                {
-                    AddBuff("Stun", 1.0f, 1, null, _owner, _owner);
-                }
-                // We do NOT apply a speed slow here, because Stun sets move speed to 0 anyway.
+                case 0: // >80% mana: +50% MS
+                    AddBuff("BlitzcrankMSBuffTier1", 25.0f, 1, spell, _owner, _owner);
+                    break;
+                case 1: // 50-80% mana: +30% MS
+                    AddBuff("BlitzcrankMSBuffTier2", 25.0f, 1, spell, _owner, _owner);
+                    break;
+                case 2: // 30-50% mana: Normal (no buff)
+                    RemoveAllTierBuffs();
+                    break;
+                case 3: // 15-30% mana: -30% MS
+                    AddBuff("BlitzcrankSlowTier2", 25.0f, 1, spell, _owner, _owner);
+                    break;
+                case 4: // 5-15% mana: -50% MS
+                    AddBuff("BlitzcrankSlowTier1", 25.0f, 1, spell, _owner, _owner);
+                    break;
+                case 5: // <5% mana: Stun
+                    AddBuff("Stun", 1.0f, 1, spell, _owner, _owner);
+                    break;
             }
         }
 
+        void RemoveAllTierBuffs()
+        {
+            // Remove all possible tier buffs before applying new one
+            var buff1 = _owner.GetBuffWithName("BlitzcrankMSBuffTier1");
+            if (buff1 != null) _owner.RemoveBuff(buff1);
+
+            var buff2 = _owner.GetBuffWithName("BlitzcrankMSBuffTier2");
+            if (buff2 != null) _owner.RemoveBuff(buff2);
+
+            var slow1 = _owner.GetBuffWithName("BlitzcrankSlowTier1");
+            if (slow1 != null) _owner.RemoveBuff(slow1);
+
+            var slow2 = _owner.GetBuffWithName("BlitzcrankSlowTier2");
+            if (slow2 != null) _owner.RemoveBuff(slow2);
+
+            var stun = _owner.GetBuffWithName("Stun");
+            if (stun != null) _owner.RemoveBuff(stun);
+        }
+
+
         public void OnLaunchAttack(Spell spell)
         {
-            // Optional: Force an immediate update on attack so the slow hits instantly
-            // rather than waiting 0.25s
-            _lastTickTime = 0f;
+
         }
     }
 }

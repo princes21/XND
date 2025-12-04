@@ -26,7 +26,7 @@ namespace Buffs
         {
             if (unit is ObjAIBase)
             {
-                StatsModifier.MoveSpeed.PercentBonus = -0.3f;
+                StatsModifier.MoveSpeed.PercentBonus -= 0.5f;
                 unit.AddStatModifier(StatsModifier);
             }
         }
@@ -35,7 +35,6 @@ namespace Buffs
         {   
             if (unit is ObjAIBase)
             {
-                unit.RemoveStatModifier(StatsModifier);
             }
         }
     }

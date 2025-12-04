@@ -21,34 +21,27 @@ namespace Buffs
         };
 
         public StatsModifier StatsModifier { get; private set; } = new();
+
         private Buff Buff;
 
         public void OnActivate(AttackableUnit unit, Buff buff, Spell ownerSpell)
         {
             Buff = buff;
+
+            // switch owner to pet-control spell
             buff.SourceUnit.SetSpell("HallucinateGuide", 3, true);
             AddBuff("ShacoCOTGSelf", buff.Duration, 1, ownerSpell, buff.SourceUnit, buff.SourceUnit);
-            BecomeInvisible(unit);
-            BecomeInvisible(buff.SourceUnit);
-            CreateTimer(0.7f, () =>
-            {
-                if (!unit.IsDead)
-                {
-                    BecomeVisible(unit);
-                    BecomeVisible(buff.SourceUnit);
-                }
-            });
+
+            // stealth BOTH for 0.7 s
+            AddBuff("Invisibility", 0.70f, 1, ownerSpell, unit, buff.SourceUnit);
+            AddBuff("Invisibility", 0.70f, 1, ownerSpell, buff.SourceUnit, buff.SourceUnit);
+
             OnDeath.AddListener(this, unit, OnCloneDeath, true);
         }
 
         public void OnDeactivate(AttackableUnit unit, Buff buff, Spell ownerSpell)
         {
-            if (!unit.IsDead)
-            {
-                AddBuff("ShacoExplode", 0.0f, 1, buff.OriginSpell, unit, buff.SourceUnit);
-                unit.Die(CreateDeathData(false, 0, unit, unit, DamageType.DAMAGE_TYPE_TRUE,
-                                         DamageSource.DAMAGE_SOURCE_INTERNALRAW, 0f));
-            }
+            // restore original R spell
             var spell = buff.SourceUnit.SetSpell("HallucinateFull", 3, true);
             spell.SetCooldown(spell.GetCooldown() - buff.TimeElapsed);
         }
