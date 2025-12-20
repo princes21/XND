@@ -455,14 +455,22 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI
             {
                 return 300f;
             }
-            else // 40+ minutes: exponential scaling based on time
+            else if (currentMinutes < 45)
             {
-                // Start at 350ms at minute 40, scale up gradually
+                // Gentle exponential scaling from 40-45 minutes
                 float minutesPast40 = currentMinutes - 40f;
-
-                // Exponential growth factor: gentle at first, steeper later
-                // At 40min: ~350ms, at 45min: ~550ms, at 50min: ~900ms, at 55min: ~1500ms
                 float timeMultiplier = 350f + (minutesPast40 * minutesPast40 * 4f);
+                return timeMultiplier;
+            }
+            else // 45+ minutes: steeper exponential scaling
+            {
+                // At minute 45, the previous formula gives us: 350 + (5*5*4) = 450
+                // We inherit this value and continue from there
+                float baseAt45 = 450f;
+                float minutesPast45 = currentMinutes - 45f;
+
+                // Steeper exponential growth from this point
+                float timeMultiplier = baseAt45 + (minutesPast45 * minutesPast45 * 6f);
 
                 return timeMultiplier;
             }

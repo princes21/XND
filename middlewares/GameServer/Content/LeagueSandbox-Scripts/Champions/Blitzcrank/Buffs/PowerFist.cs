@@ -29,6 +29,7 @@ namespace Buffs
 
         Buff thisBuff;
         ObjAIBase Unit;
+        Spell spell;
         
         public void OnActivate(AttackableUnit unit, Buff buff, Spell ownerSpell)
         {
@@ -62,7 +63,9 @@ namespace Buffs
                 
                 
                 target.TakeDamage(Unit, damage, DamageType.DAMAGE_TYPE_PHYSICAL, DamageSource.DAMAGE_SOURCE_ATTACK, false);
-                ForceMovement(target, "RUN", new Vector2(Unit.Position.X - 300f, Unit.Position.Y - 300f), 13f, 0, 16.5f, 0);
+                var trueCoords = GetPointFromUnit(Unit, 350f);
+                AddBuff("Stun", 0.75f, 1, spell, target, Unit);
+                ForceMovement(target, "RUN", trueCoords, 2200, 0, 0, 0);
                 thisBuff.DeactivateBuff();
             }
         }

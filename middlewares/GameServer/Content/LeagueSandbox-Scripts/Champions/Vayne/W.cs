@@ -24,7 +24,6 @@ namespace Spells
             Spell = spell;
             Owner = spell.CastInfo.Owner;
             ApiEventManager.OnLevelUpSpell.AddListener(this, spell, OnLevelUp, true);
-            AddBuff("VayneSilveredBolts", 1f, 1, spell, owner, owner, true);
         }
         public void OnLevelUp (Spell spell)
         {
@@ -34,6 +33,7 @@ namespace Spells
         {
             var target = damageData.Target;
             AddBuff("VayneSilveredBolts", 3f, 1, Spell, target, Owner);
+
         }
     }
 }

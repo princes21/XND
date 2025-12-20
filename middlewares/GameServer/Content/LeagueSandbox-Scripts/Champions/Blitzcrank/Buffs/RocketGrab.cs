@@ -23,6 +23,7 @@ namespace Buffs
         public void OnActivate(AttackableUnit unit, Buff buff, Spell ownerSpell)
         {
             grab = AddParticleTarget(ownerSpell.CastInfo.Owner, unit, "FistReturn_mis", ownerSpell.CastInfo.Owner, buff.Duration, 1, "head", "R_hand");
+            ForceMovement(unit, "RUN", buff.SourceUnit.Position, 1800f, 0, 5.0f, 0, movementOrdersType: ForceMovementOrdersType.CANCEL_ORDER);
         }
 
         public void OnDeactivate(AttackableUnit unit, Buff buff, Spell ownerSpell)
