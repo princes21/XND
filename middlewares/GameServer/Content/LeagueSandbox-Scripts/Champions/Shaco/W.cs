@@ -1,13 +1,14 @@
 using GameServerCore;
-using LeagueSandbox.GameServer.Scripting.CSharp;
-using static LeagueSandbox.GameServer.API.ApiFunctionManager;
 using GameServerCore.Enums;
-using System.Numerics;
 using GameServerCore.Scripting.CSharp;
+using LeagueSandbox.GameServer.GameObjects;
 using LeagueSandbox.GameServer.GameObjects.AttackableUnits;
 using LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI;
 using LeagueSandbox.GameServer.GameObjects.AttackableUnits.Buildings.AnimatedBuildings;
 using LeagueSandbox.GameServer.GameObjects.SpellNS;
+using LeagueSandbox.GameServer.Scripting.CSharp;
+using System.Numerics;
+using static LeagueSandbox.GameServer.API.ApiFunctionManager;
 
 namespace Spells
 {
@@ -20,6 +21,7 @@ namespace Spells
         private Minion box;
         private bool hasTriggered = false;
         private float scanTimer = 0f;
+        private Buff invisBuff;
 
         public void OnSpellPostCast(Spell spell)
         {
@@ -30,8 +32,10 @@ namespace Spells
             box = AddMinion((Champion)owner, "ShacoBox", "ShacoBox", spellPos,
                             owner.Team, aiPaused: true);
             AddParticle(owner, null, "JackintheboxPoof", spellPos);
-            BecomeInvisible(box);
-            box.SetStatus(StatusFlags.Targetable, false);
+            
+            // Add permanent invisibility buff
+            invisBuff = AddBuff("Invisibility", float.MaxValue, 1, spell, box, owner);
+
             hasTriggered = false;
             scanTimer = 0f;
 
@@ -67,7 +71,12 @@ namespace Spells
 
         private void TriggerBox(AttackableUnit target)
         {
-            BecomeVisible(box);
+            // Remove invisibility buff instead of using BecomeVisible
+            if (invisBuff != null && !invisBuff.Elapsed())
+            {
+                invisBuff.DeactivateBuff();
+            }
+
             box.SetStatus(StatusFlags.Targetable, true);
             var fearDur = 0.5f + 0.25f * (box.Owner.Spells[1].CastInfo.SpellLevel - 1);
             AddBuff("Fear", fearDur, 1, box.Owner.Spells[1], target, box.Owner);

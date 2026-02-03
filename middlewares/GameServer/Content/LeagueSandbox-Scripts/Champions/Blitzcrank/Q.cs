@@ -73,8 +73,9 @@ namespace Spells
         public void TargetExecute(Spell spell, AttackableUnit target, SpellMissile missile, SpellSector sector)
         {
             var owner = spell.CastInfo.Owner;
-            var ap = owner.Stats.AbilityPower.Total;
-            var damage = 80 + ((spell.CastInfo.SpellLevel - 1) * 55) + ap;
+            var ap = owner.Stats.AbilityPower.Total * 0.6f;
+            var manaDamage = owner.Stats.CurrentMana * 0.05f;
+            var damage = 80 + ((spell.CastInfo.SpellLevel - 1) * 50) + ap + manaDamage;
             var dist = System.Math.Abs(Vector2.Distance(target.Position, owner.Position));
             var time = dist / 1350f;
 

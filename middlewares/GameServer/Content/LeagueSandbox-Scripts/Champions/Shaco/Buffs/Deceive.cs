@@ -41,7 +41,8 @@ namespace Buffs
                 ApiEventManager.OnPreAttack.AddListener(this, champion, OnFirstAttack, true);
             }
             unit.AddStatModifier(StatsModifier);
-            BecomeInvisible(unit);
+            AddBuff("Invisibility", 3.5f, 1, ownerSpell, ownerChampion, ownerChampion);
+
         }
 
         private void OnFirstAttack(Spell spell)
@@ -63,6 +64,10 @@ namespace Buffs
         private void BreakStealth(Spell spell)
         {
             thisBuff?.DeactivateBuff();
+            if (ownerChampion.HasBuff("Invisibility"))
+            {
+                ownerChampion.RemoveBuffsWithName("Invisibility");
+            }
         }
 
         public void OnDeactivate(AttackableUnit unit, Buff buff, Spell ownerSpell)
@@ -79,8 +84,6 @@ namespace Buffs
                     champ.RemoveStatModifier(StatsModifier);
                 }
             }
-
-            BecomeVisible(unit);
         }
 
         public void OnUpdate(float diff) { }

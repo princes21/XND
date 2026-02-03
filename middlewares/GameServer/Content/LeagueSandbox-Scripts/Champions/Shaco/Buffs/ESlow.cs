@@ -16,7 +16,7 @@ using LeagueSandbox.GameServer.GameObjects;
 
 namespace Buffs
 {
-    internal class TwoShivPoison : IBuffGameScript
+    internal class ESlow : IBuffGameScript
     {
         public BuffScriptMetaData BuffMetaData { get; set; } = new BuffScriptMetaData
         {

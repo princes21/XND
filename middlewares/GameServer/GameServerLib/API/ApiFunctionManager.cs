@@ -711,6 +711,16 @@ namespace LeagueSandbox.GameServer.API
                     _game.PacketNotifier.NotifyLeaveVisibilityClient(unit, team);
                     // Set visibility flag
                     unit.SetVisibleByTeam(team, false);
+
+                    var enemies = _game.ObjectManager.GetUnitsInRange(unit.Position, 2000f, true); // Reasonable range
+                    foreach (var enemy in enemies)
+                    {
+                        if (enemy.Team == team && enemy is ObjAIBase ai && ai.TargetUnit == unit)
+                        {
+                            ai.CancelAutoAttack(true); // Stop the swing
+                            ai.SetTargetUnit(null, true); // Clear the target
+                        }
+                    }
                 }
             }
         }

@@ -5,53 +5,68 @@ using LeagueSandbox.GameServer.API;
 using LeagueSandbox.GameServer.GameObjects;
 using LeagueSandbox.GameServer.GameObjects.AttackableUnits;
 using LeagueSandbox.GameServer.GameObjects.SpellNS;
+using LeagueSandbox.GameServer.GameObjects.SpellNS.Missile;
+using LeagueSandbox.GameServer.GameObjects.SpellNS.Sector;
 using LeagueSandbox.GameServer.GameObjects.StatsNS;
 using LeagueSandbox.GameServer.Scripting.CSharp;
-using static LeagueSandbox.GameServer.API.ApiEventManager;
+using static LeaguePackets.Game.Common.CastInfo;
 using static LeagueSandbox.GameServer.API.ApiFunctionManager;
 
 namespace Buffs
 {
     internal class ShacoCOTGPetBuff2 : IBuffGameScript
     {
-        public BuffScriptMetaData BuffMetaData { get; set; } = new()
+        public BuffScriptMetaData BuffMetaData { get; set; } = new BuffScriptMetaData
         {
             BuffType = BuffType.AURA,
             BuffAddType = BuffAddType.REPLACE_EXISTING
         };
 
-        public StatsModifier StatsModifier { get; private set; } = new();
+        public StatsModifier StatsModifier { get; private set; } = new StatsModifier();
 
-        private Buff Buff;
+        public SpellSector DRMundoWAOE;
+        Buff Buff;
+        Particle p;
+        Particle p2;
+
 
         public void OnActivate(AttackableUnit unit, Buff buff, Spell ownerSpell)
         {
+            ApiEventManager.OnDeath.AddListener(this, unit, OnGhostDeath, true);
             Buff = buff;
-
-            // switch owner to pet-control spell
+            AddBuff("ShacoCOTGPetBuff", buff.Duration, 1, ownerSpell, unit, buff.SourceUnit);
             buff.SourceUnit.SetSpell("HallucinateGuide", 3, true);
             AddBuff("ShacoCOTGSelf", buff.Duration, 1, ownerSpell, buff.SourceUnit, buff.SourceUnit);
+            ApiEventManager.OnDeath.AddListener(this, unit, OnGhostDeath, true);
 
-            // stealth BOTH for 0.7 s
-            AddBuff("Invisibility", 0.70f, 1, ownerSpell, unit, buff.SourceUnit);
-            AddBuff("Invisibility", 0.70f, 1, ownerSpell, buff.SourceUnit, buff.SourceUnit);
-
-            OnDeath.AddListener(this, unit, OnCloneDeath, true);
         }
 
         public void OnDeactivate(AttackableUnit unit, Buff buff, Spell ownerSpell)
         {
-            // restore original R spell
-            var spell = buff.SourceUnit.SetSpell("HallucinateFull", 3, true);
+            var owner = ownerSpell.CastInfo.Owner;
+            //In theory the killer should be null, but that causes the ghost to not die(?)
+
+            RemoveParticle(p);
+            RemoveParticle(p2);
+            RemoveBuff(buff.SourceUnit, "ShacoCOTGSelf");
+            Spell spell = buff.SourceUnit.SetSpell("HallucinateFull", 3, true);
+
+            //Check if this is done on-script or should be handled automatically
             spell.SetCooldown(spell.GetCooldown() - buff.TimeElapsed);
+            if (spell.GetCooldown() > 0)
+
+            unit.Die(CreateDeathData(false, 0, unit, unit, DamageType.DAMAGE_TYPE_PHYSICAL, DamageSource.DAMAGE_SOURCE_INTERNALRAW, 0.0f));
         }
 
-        private void OnCloneDeath(DeathData data)
+        public void OnUpdate(float diff)
+        {
+
+        }
+
+        public void OnGhostDeath(DeathData data)
         {
             AddBuff("ShacoExplode", 0.5f, 1, Buff.OriginSpell, Buff.TargetUnit, Buff.SourceUnit);
             Buff.DeactivateBuff();
         }
-
-        public void OnUpdate(float diff) { }
     }
 }

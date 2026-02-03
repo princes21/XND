@@ -8,17 +8,13 @@ using GameServerCore.Enums;
 using System.Numerics;
 
 namespace Spells
-
-    {
-    
+{
     public class VayneCondemn : ISpellScript
     {
-      
-
         public SpellScriptMetadata ScriptMetadata { get; private set; } = new SpellScriptMetadata()
         {
             TriggersSpellCasts = true,
- 
+
             // TODO
         };
 
@@ -28,7 +24,8 @@ namespace Spells
             AddBuff("AbilityUsed", 4f, 1, spell, owner, owner);
         }
     }
-    public class VayneCondemnMissile: ISpellScript
+
+    public class VayneCondemnMissile : ISpellScript
     {
         public SpellScriptMetadata ScriptMetadata { get; private set; } = new SpellScriptMetadata()
         {
@@ -37,11 +34,14 @@ namespace Spells
             // TODO
         };
         ObjAIBase Owner;
-       
+
+        private const byte ApplyStacksAmount = 2;
+
         public void OnActivate(ObjAIBase owner, Spell spell)
         {
             Owner = owner;
         }
+
         public void OnSpellPostCast(Spell spell)
         {
             var target = spell.CastInfo.Targets[0].Unit;
@@ -51,6 +51,10 @@ namespace Spells
             target.TakeDamage(Owner, damage, DamageType.DAMAGE_TYPE_PHYSICAL, DamageSource.DAMAGE_SOURCE_SPELL, false);
             ForceMovement(target, "RUN", GetPointFromUnit(target, -(470)), 2200, 0, 0, 0);
             AddBuff("Stun", 1.5f, 1, spell, target, Owner);
+            for (int i = 0; i < ApplyStacksAmount; i++)
+            {
+                AddBuff("VayneSilveredBolts", float.MaxValue, 1, spell, target, Owner);
+            }
         }
     }
 }

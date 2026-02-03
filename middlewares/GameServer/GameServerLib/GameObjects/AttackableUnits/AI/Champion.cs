@@ -410,6 +410,7 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI
 
         public override void Die(DeathData data)
         {
+            _game.PacketNotifier.NotifyS2C_SetGreyscaleEnabledWhenDead(false, data.Unit);
             IsDead = true;
             RespawnTimer = (GetDeathTimerPerDeath() * ChampStats.Deaths) + 2000; // 2 second base
             ChampStats.Deaths++;

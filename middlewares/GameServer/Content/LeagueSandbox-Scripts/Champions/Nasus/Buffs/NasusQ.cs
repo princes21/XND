@@ -80,6 +80,8 @@ namespace Buffs
             }
         }
 
+        private const byte ApplyStacksAmount = 12;
+
         public void ApplyQStacks(DeathData deathData)
         {
             var owner = deathData.Killer;
@@ -87,23 +89,13 @@ namespace Buffs
             var Owner = owner as ObjAIBase;
             killedtarget = true;
 
-
             if (killedtarget == true)
             {
                 thisBuff.DeactivateBuff();
-
-                AddBuff("NasusQStacks", 25000f, 1, spell, owner, Owner, true);
-                AddBuff("NasusQStacks", 25000f, 1, spell, owner, Owner, true);
-                AddBuff("NasusQStacks", 25000f, 1, spell, owner, Owner, true);
-                AddBuff("NasusQStacks", 25000f, 1, spell, owner, Owner, true);
-                AddBuff("NasusQStacks", 25000f, 1, spell, owner, Owner, true);
-                AddBuff("NasusQStacks", 25000f, 1, spell, owner, Owner, true);
-                AddBuff("NasusQStacks", 25000f, 1, spell, owner, Owner, true);
-                AddBuff("NasusQStacks", 25000f, 1, spell, owner, Owner, true);
-                AddBuff("NasusQStacks", 25000f, 1, spell, owner, Owner, true);
-                AddBuff("NasusQStacks", 25000f, 1, spell, owner, Owner, true);
-                AddBuff("NasusQStacks", 25000f, 1, spell, owner, Owner, true);
-                AddBuff("NasusQStacks", 25000f, 1, spell, owner, Owner, true);
+                for (int i = 0; i < ApplyStacksAmount; i++) //Apply 12 Stacks
+                {
+                    AddBuff("NasusQStacks", 25000f, 1, spell, owner, Owner, true);
+                }
             }
         }
 

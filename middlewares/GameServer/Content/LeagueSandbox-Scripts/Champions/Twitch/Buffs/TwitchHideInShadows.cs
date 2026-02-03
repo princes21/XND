@@ -24,7 +24,8 @@ namespace Buffs
         Particle pbuff;
         Particle pbuff2;
         Buff thisBuff;
-		Spell Spell;
+        private Buff invisBuff;
+        Spell Spell;
 		ObjAIBase owner;
 
         public void OnActivate(AttackableUnit unit, Buff buff, Spell ownerSpell)
@@ -45,12 +46,20 @@ namespace Buffs
         }
         public void OnLaunchAttack(Spell spell)
         {
-            BecomeVisible(owner);
-			if (thisBuff != null && thisBuff.StackCount != 0 && !thisBuff.Elapsed())
+            // Deactivate invisibility
+            invisBuff = AddBuff("Invisibility", 300f, 1, spell, owner, owner);
+            if (invisBuff != null && thisBuff.StackCount != 0 && thisBuff.Elapsed())
+            {
+            invisBuff.DeactivateBuff();
+            }
+
+
+            if (thisBuff != null && thisBuff.StackCount != 0 && !thisBuff.Elapsed())
             {
             thisBuff.DeactivateBuff();
 			}
         }
+
         public void OnDeactivate(AttackableUnit unit, Buff buff, Spell ownerSpell)
         {
             RemoveBuff(thisBuff);
@@ -61,7 +70,13 @@ namespace Buffs
             }
             if (unit is ObjAIBase ai)
             {
-                BecomeVisible(owner);
+                // Deactivate invisibility
+                invisBuff = AddBuff("Invisibility", 300f, 1, Spell, owner, owner);
+                if (invisBuff != null && thisBuff.StackCount != 0 && thisBuff.Elapsed())
+                {
+                    invisBuff.DeactivateBuff();
+                }
+
                 AddBuff("TwitchHideInShadowsBuff", 5f, 1, Spell, ai, ai);
                 AddParticle(ai, null, "Twitch_Base_Q_Invisiible_Outro", ai.Position, lifetime: buff.Duration);
             }

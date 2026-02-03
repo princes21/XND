@@ -29,11 +29,25 @@ namespace Spells
         {
             ApiEventManager.OnHitUnit.AddListener(this, spell.CastInfo.Owner, OnHitUnit, false);
         }
+
+        private const byte ApplyStacksAmount = 2;
+
         public void OnHitUnit(DamageData damageData)
         {
             var target = damageData.Target;
-            AddBuff("VayneSilveredBolts", 3f, 1, Spell, target, Owner);
-
+            if (Owner.HasBuff("VayneInquisition"))
+            {
+                for (int i = 0; i < ApplyStacksAmount; i++)
+                {
+                    AddBuff("VayneSilveredBolts", 3f, 1, Spell, target, Owner);
+                }
+            }
+            else
+            {
+                {
+                    AddBuff("VayneSilveredBolts", 3f, 1, Spell, target, Owner);
+                }
+            }
         }
     }
 }

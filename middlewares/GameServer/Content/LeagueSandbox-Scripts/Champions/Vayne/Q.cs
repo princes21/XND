@@ -28,6 +28,7 @@ namespace Spells
             FaceDirection(spellPos, owner, true);
             AddBuff("AbilityUsed", 4.0f, 1, spell, owner, owner);
             var trueCoords = GetPointFromUnit(owner, spell.SpellData.CastRangeDisplayOverride);
+            AddBuff("VayneQBuff", 4.0f, 1, spell, owner, owner);
 
             ForceMovement(owner, "Spell1", trueCoords, 1350, 0, 0, 0, movementOrdersFacing: ForceMovementOrdersFacing.KEEP_CURRENT_FACING);
         }

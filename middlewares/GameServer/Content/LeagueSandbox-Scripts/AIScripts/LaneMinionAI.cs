@@ -125,6 +125,7 @@ namespace AIScripts
                 && UnitInRange(u, LaneMinion.Stats.AcquisitionRange.Total)
                 && u.IsVisibleByTeam(LaneMinion.Team)
                 && u.Status.HasFlag(StatusFlags.Targetable)
+                && !u.Status.HasFlag(StatusFlags.Stealthed)
                 && !UnitIsProtectionActive(u)
             );
         }
