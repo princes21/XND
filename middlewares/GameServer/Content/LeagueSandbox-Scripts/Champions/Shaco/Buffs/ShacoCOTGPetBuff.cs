@@ -1,37 +1,32 @@
-﻿using GameServerCore.Enums;
-using GameServerCore.Scripting.CSharp;
-using LeagueSandbox.GameServer.GameObjects;
-using LeagueSandbox.GameServer.GameObjects.AttackableUnits;
-using LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI;
-using LeagueSandbox.GameServer.GameObjects.SpellNS;
-using LeagueSandbox.GameServer.GameObjects.StatsNS;
-using LeagueSandbox.GameServer.Scripting.CSharp;
-using static LeagueSandbox.GameServer.API.ApiFunctionManager;
-
-namespace Buffs
+﻿ namespace Buffs
 {
     internal class ShacoCOTGPetBuff : IBuffGameScript
     {
-        public BuffScriptMetaData BuffMetaData { get; set; } = new()
+        public BuffScriptMetaData BuffMetaData { get; set; } = new BuffScriptMetaData
         {
             BuffType = BuffType.INTERNAL,
             BuffAddType = BuffAddType.REPLACE_EXISTING
         };
 
-        public StatsModifier StatsModifier { get; private set; } = new();
+        public StatsModifier StatsModifier { get; private set; } = new StatsModifier();
 
         public void OnActivate(AttackableUnit unit, Buff buff, Spell ownerSpell)
         {
             var owner = ownerSpell.CastInfo.Owner;
-            if (unit is not Pet pet) return;
+            //Stats applied here might not be notified to the clients, even though all necessary packets are sent, i was unsuccessful on pinpointing the cause (cabeca143).
+            if (unit is Pet pet)
+            {
 
-            if (owner.HasBuff("Invisibility")) return;
-
-            AddBuff("Invisibility", 0.70f, 1, ownerSpell, pet, owner);
-            AddBuff("Invisibility", 0.70f, 1, ownerSpell, owner, owner);
+                if (owner.HasBuff("Invisibility"))
+                {
+                    return;
+                }
+                else
+                {
+                    AddBuff("Invisibility", 0.70f, 1, ownerSpell, pet, owner);
+                    AddBuff("Invisibility", 0.70f, 1, ownerSpell, owner, owner);
+                }
+            }
         }
-
-        public void OnDeactivate(AttackableUnit unit, Buff buff, Spell ownerSpell) { }
-        public void OnUpdate(float diff) { }
     }
 }

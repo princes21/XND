@@ -1,43 +1,41 @@
-﻿using GameServerCore.Enums;
-using GameServerCore.Scripting.CSharp;
-using LeagueSandbox.GameServer.GameObjects;
-using LeagueSandbox.GameServer.GameObjects.AttackableUnits;
-using LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI;
-using LeagueSandbox.GameServer.GameObjects.SpellNS;
-using LeagueSandbox.GameServer.GameObjects.StatsNS;
-using LeagueSandbox.GameServer.Scripting.CSharp;
-
-namespace Buffs
+﻿namespace Buffs
 {
     internal class ShacoCOTGSelf : IBuffGameScript
     {
-        public BuffScriptMetaData BuffMetaData { get; set; } = new()
+        public BuffScriptMetaData BuffMetaData { get; set; } = new BuffScriptMetaData
         {
             BuffType = BuffType.COMBAT_ENCHANCER,
             BuffAddType = BuffAddType.REPLACE_EXISTING
         };
 
-        public StatsModifier StatsModifier { get; private set; } = new();
+        public StatsModifier StatsModifier { get; private set; } = new StatsModifier();
 
         public void OnActivate(AttackableUnit unit, Buff buff, Spell ownerSpell)
         {
-            if (buff.SourceUnit.GetPet() is not Pet ghost) return;
+            Pet ghost = buff.SourceUnit.GetPet();
+
+            var armor = unit.Stats.Armor.BaseValue * 0.50f;
+            var mr = unit.Stats.MagicResist.BaseValue * 0.50f;
+            var s = unit.Stats.AbilityPower.BaseValue * 0.75f;
+            var a = unit.Stats.AttackDamage.BaseValue * 0.75f;
+            var d = unit.Stats.ArmorPenetration.BaseValue;
+            var y = unit.Stats.MagicPenetration.BaseValue;
+            var o = unit.Stats.Level;
 
             ghost.Stats.CurrentHealth = unit.Stats.CurrentHealth;
             ghost.Stats.CurrentMana = unit.Stats.CurrentMana;
             ghost.Stats.HealthPoints.BaseValue = unit.Stats.HealthPoints.BaseValue;
             ghost.Stats.ManaPoints.BaseValue = unit.Stats.ManaPoints.BaseValue;
-            ghost.Stats.Armor.BaseValue = unit.Stats.Armor.BaseValue * 0.5f;
-            ghost.Stats.MagicResist.BaseValue = unit.Stats.MagicResist.BaseValue * 0.5f;
-            ghost.Stats.ArmorPenetration.BaseValue = unit.Stats.ArmorPenetration.BaseValue;
-            ghost.Stats.MagicPenetration.BaseValue = unit.Stats.MagicPenetration.BaseValue;
-            ghost.Stats.Level = unit.Stats.Level;
-            ghost.Stats.AbilityPower.BaseValue = unit.Stats.AbilityPower.BaseValue * 0.75f;
-            ghost.Stats.AttackDamage.BaseValue = unit.Stats.AttackDamage.BaseValue * 0.75f;
-            ghost.Stats.MoveSpeed.BaseValue = unit.Stats.MoveSpeed.BaseValue;
-        }
+            ghost.Stats.Armor.BaseValue = armor;
+            ghost.Stats.Armor.BaseValue = mr;
+            ghost.Stats.ArmorPenetration.BaseValue = d;
+            ghost.Stats.MagicPenetration.BaseValue = y;
+            ghost.Stats.Level = o;
+            ghost.Stats.AbilityPower.BaseValue = s;
+            ghost.Stats.AttackDamage.BaseValue = a; 
+            ghost.Stats.MoveSpeed.BaseValue = unit.Stats.MoveSpeed.BaseValue;   
 
-        public void OnDeactivate(AttackableUnit unit, Buff buff, Spell ownerSpell) { }
-        public void OnUpdate(float diff) { }
+            ghost.AddStatModifier(StatsModifier);
+        }
     }
 }
