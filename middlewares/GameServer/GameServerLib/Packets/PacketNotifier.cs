@@ -1223,6 +1223,112 @@ namespace PacketDefinitions420
         }
 
         /// <summary>
+        /// Broadcasts an objective text message to all players or a specific player.
+        /// </summary>
+        /// <param name="message">The message to display.</param>
+        /// <param name="userId">Specific user to send to. -1 = broadcast to all.</param>
+        public void NotifyShowObjectiveText(string message, int userId = -1)
+        {
+            var packet = new S2C_ShowObjectiveText
+            {
+                Message = message
+            };
+
+            if (userId < 0)
+            {
+                _packetHandlerManager.BroadcastPacket(packet.GetBytes(), Channel.CHL_S2C);
+            }
+            else
+            {
+                _packetHandlerManager.SendPacket(userId, packet.GetBytes(), Channel.CHL_S2C);
+            }
+        }
+
+        /// <summary>
+        /// Sends a quest update notification to a specific player or all players.
+        /// </summary>
+        /// <param name="objective">The objective text to display.</param>
+        /// <param name="tooltip">Tooltip text shown on hover.</param>
+        /// <param name="reward">Reward text displayed.</param>
+        /// <param name="icon">Icon path to display.</param>
+        /// <param name="questId">Unique ID for this quest (use different IDs for different quests).</param>
+        /// <param name="questType">Type of quest. Function unknown, try 0.</param>
+        /// <param name="questCommand">Command for the quest. Function unknown, try 0.</param>
+        /// <param name="success">Whether to show as completed.</param>
+        /// <param name="ceremony">Whether to play a completion ceremony.</param>
+        /// <param name="handleRollovers">Function unknown, try false.</param>
+        /// <param name="userId">Specific user to send to. -1 = broadcast to all.</param>
+        public void NotifyHandleQuestUpdate(string objective, string tooltip = "", string reward = "", string icon = "",
+            uint questId = 1, byte questType = 0, byte questCommand = 0,
+            bool success = false, bool ceremony = false, bool handleRollovers = false,
+            int userId = -1)
+        {
+            var packet = new S2C_HandleQuestUpdate
+            {
+                Objective = objective,
+                Tooltip = tooltip,
+                Reward = reward,
+                Icon = icon,
+                QuestID = questId,
+                QuestType = questType,
+                QuestCommand = questCommand,
+                Success = success,
+                Ceremony = ceremony,
+                HandleRollovers = handleRollovers
+            };
+
+            if (userId < 0)
+            {
+                _packetHandlerManager.BroadcastPacket(packet.GetBytes(), Channel.CHL_S2C);
+            }
+            else
+            {
+                _packetHandlerManager.SendPacket(userId, packet.GetBytes(), Channel.CHL_S2C);
+            }
+        }
+
+        /// <summary>
+        /// Sends a speech bubble message above a unit visible to all or a specific player.
+        /// </summary>
+        /// <param name="unit">The unit to display the message above.</param>
+        /// <param name="message">The message to display.</param>
+        /// <param name="slotNumber">The unit's slot number on its team.</param>
+        /// <param name="colorIndex">Color index of the text.</param>
+        /// <param name="floatTextType">Visual type of the floating text.</param>
+        /// <param name="bubbleDelay">Delay before the bubble appears (0f = instant).</param>
+        /// <param name="isError">Whether to display as an error message.</param>
+        /// <param name="userId">Specific user to send to. -1 = broadcast to all with vision.</param>
+        public void NotifyNPCMessageToClientBroadcast(
+            GameObject unit,
+            string message,
+            int slotNumber = 0,
+            byte colorIndex = 0,
+            FloatTextType floatTextType = FloatTextType.Invulnerable,
+            float bubbleDelay = 0f,
+            bool isError = false,
+            int userId = -1)
+        {
+            var textPacket = new NPC_MessageToClient_Broadcast
+            {
+                BubbleDelay = bubbleDelay,
+                SlotNumber = slotNumber,
+                IsError = isError,
+                ColorIndex = colorIndex,
+                FloatTextType = (uint)floatTextType,
+                Message = message
+            };
+
+            if (userId < 0)
+            {
+                _packetHandlerManager.BroadcastPacketVision(unit, textPacket.GetBytes(), Channel.CHL_S2C);
+            }
+            else
+            {
+                _packetHandlerManager.SendPacket(userId, textPacket.GetBytes(), Channel.CHL_S2C);
+            }
+        } // idk how to make it work
+
+        /// <summary>
         /// Sends a packet to the specified user detailing that the GameObject that owns the specified netId has finished being initialized into vision.
         /// </summary>
         /// <param name="userId">User to send the packet to.</param>

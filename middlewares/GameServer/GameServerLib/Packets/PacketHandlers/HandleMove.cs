@@ -70,7 +70,13 @@ namespace LeagueSandbox.GameServer.Packets.PacketHandlers
                         }
                         champion.UpdateMoveOrder(req.OrderType, true);
                         champion.SetWaypoints(waypoints);
-                        champion.SetTargetUnit(u);
+                        
+                        // Don't clear target if auto-attack is casting, unless this is an explicit AttackTo on a different target
+                        // This prevents animation cancellation when player accidentally clicks during attack windup
+                        if (u != null || !champion.IsAttacking || champion.AutoAttackSpell?.State != GameServerCore.Enums.SpellState.STATE_CASTING)
+                        {
+                            champion.SetTargetUnit(u);
+                        }
                         break;
                     case OrderType.PetHardAttack:
                     case OrderType.PetHardMove:

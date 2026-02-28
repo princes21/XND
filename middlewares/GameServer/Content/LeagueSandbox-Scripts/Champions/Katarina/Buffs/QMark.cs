@@ -24,13 +24,16 @@ namespace Buffs
         Particle p;
         public void OnActivate(AttackableUnit unit, Buff buff, Spell ownerSpell)
         {
-			AddParticleTarget(ownerSpell.CastInfo.Owner, unit, "katarina_shadowStep_tar.troy", unit, buff.Duration);
+            AddParticleTarget(ownerSpell.CastInfo.Owner, unit, "katarina_shadowStep_tar.troy", unit, buff.Duration);
             p = AddParticleTarget(ownerSpell.CastInfo.Owner, unit, "katarina_daggered.troy", unit, buff.Duration);
         }
 
         public void OnDeactivate(AttackableUnit unit, Buff buff, Spell ownerSpell)
         {
             RemoveParticle(p);
+            var TargetHealth = unit.Stats.HealthPoints.Total;
+            var TargetCurrentHealth = unit.Stats.HealthPoints;
+            unit.TakeDamage(ownerSpell.CastInfo.Owner, 100, DamageType.DAMAGE_TYPE_TRUE, DamageSource.DAMAGE_SOURCE_INTERNALRAW, false);
         }
     }
 }

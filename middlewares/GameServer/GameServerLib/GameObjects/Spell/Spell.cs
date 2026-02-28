@@ -221,14 +221,9 @@ namespace LeagueSandbox.GameServer.GameObjects.SpellNS
 
             if (CastInfo.Targets.Count > 0 && CastInfo.Targets[0].Unit != null)
             {
-                // Uncancellable.
-                if (SpellData.CantCancelWhileWindingUp)
-                {
-                    return false;
-                }
-
                 var spellTarget = CastInfo.Targets[0].Unit;
 
+                // Always cancel if target dies, becomes invisible, or untargetable - even for uncancellable spells
                 if (!spellTarget.IsVisibleByTeam(CastInfo.Owner.Team)
                 || !spellTarget.Status.HasFlag(StatusFlags.Targetable)
                 || spellTarget.IsDead)
@@ -243,10 +238,19 @@ namespace LeagueSandbox.GameServer.GameObjects.SpellNS
                     return true;
                 }
 
-                // Regular auto attacks can lose their target due to untargetability and distance.
+                // Uncancellable spells skip remaining checks (except target validity above)
+                if (SpellData.CantCancelWhileWindingUp)
+                {
+                    return false;
+                }
+
+                // Regular auto attacks can lose their target due to untargetability, but NOT distance.
+                // Once committed, auto-attacks should complete their windup regardless of target position.
+                // This prevents jerky movement when chasing targets at the edge of attack range.
+                // Use NetId comparison instead of reference equality to avoid false cancellations
+                // when TargetUnit is reassigned to the same logical unit.
                 if (CastInfo.IsAutoAttack
-                && (spellTarget != CastInfo.Owner.TargetUnit
-             // || Vector2.Distance(spellTarget.Position, CastInfo.Owner.Position) > (CastInfo.Owner.Stats.Range.Total + spellTarget.CollisionRadius) // TODO: Verify if edge-to-edge
+                && (spellTarget.NetId != CastInfo.Owner.TargetUnit?.NetId
                 || CastInfo.Owner.GetCastSpell() != null
                 || CastInfo.Owner.ChannelSpell != null))
                 {
@@ -1593,6 +1597,11 @@ namespace LeagueSandbox.GameServer.GameObjects.SpellNS
                     {
                         if (CastCancelCheck())
                         {
+                            // If auto-attack was cancelled, ensure owner's attack state is cleared
+                            if (CastInfo.IsAutoAttack && CastInfo.Owner.IsAttacking)
+                            {
+                                CastInfo.Owner.CancelAutoAttack(!CastInfo.Owner.HasAutoAttacked, true);
+                            }
                             break;
                         }
                         if (!CastInfo.IsAutoAttack && !CastInfo.UseAttackCastTime)

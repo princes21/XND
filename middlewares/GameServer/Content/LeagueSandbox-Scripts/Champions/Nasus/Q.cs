@@ -19,11 +19,10 @@ namespace Spells
         public void OnSpellPreCast(ObjAIBase owner, Spell spell, AttackableUnit target, Vector2 start, Vector2 end)
 
         {
-            AddBuff("AbilityUsed",4f, 1, spell, owner, owner, false);
-            AddBuff("NasusQ",10f, 1, spell, owner, owner, false);
+            AddBuff("AbilityUsed", 4f, 1, spell, owner, owner, false);
+            AddBuff("NasusQ", 10f, 1, spell, owner, owner, false);
             AddBuff("Exalted", 10f, 1, spell, owner, owner, false); // just a test or a helpful reference, remove later if you perfect it
         }
     }
 }
-        
-  
+

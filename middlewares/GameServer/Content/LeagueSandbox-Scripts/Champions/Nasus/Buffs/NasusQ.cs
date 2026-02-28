@@ -46,6 +46,14 @@ namespace Buffs
             p = AddParticleTarget(ownerSpell.CastInfo.Owner, ownerSpell.CastInfo.Owner, "Nasus_Base_Q_Buf.troy", owner, buff.Duration, 1, "BUFFBONE_CSTM_WEAPON_1");
             p2 = AddParticleTarget(ownerSpell.CastInfo.Owner, ownerSpell.CastInfo.Owner, "Nasus_Base_Q_Wpn_trail.troy", owner, buff.Duration, 1, "BUFFBONE_CSTM_WEAPON_1");
             owner.SkipNextAutoAttack();
+
+            ShowObjectiveText("this is a test");
+            HandleQuestUpdate(
+                objective: "Kill the enemy Nexus",
+                tooltip: "Destroy it to win",
+                reward: "Victory",
+                questId: 1
+ );
         }
 
 
@@ -106,6 +114,13 @@ namespace Buffs
             RemoveParticle(p2);
             //ApiEventManager.OnHitUnit.RemoveListener(owner);
             //ApiEventManager.OnKillUnit.RemoveListener(owner);
+
+            HandleQuestUpdate(
+    objective: "",
+    questId: 1,        // same ID as the one you want to remove
+    success: true,     // mark it as done
+    ceremony: true     // might play a completion animation then dismiss it
+);
         }
     }
 }

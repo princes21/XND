@@ -551,6 +551,32 @@ namespace LeagueSandbox.GameServer.API
             _game.PacketNotifier.NotifyDisplayFloatingText(data, team, userId);
         }
 
+        public static void DisplayTextAboveUnit(AttackableUnit target, string message, TeamId team = 0, int userId = -1)
+        {
+            _game.PacketNotifier.NotifyNPCMessageToClientBroadcast(target, "Hello!", slotNumber: 0, bubbleDelay: 0f);
+        } // idk how to make it work
+
+        public static void ShowObjectiveText(string message, TeamId team = 0, int userId = -1)
+        {
+            _game.PacketNotifier.NotifyShowObjectiveText(message, userId);
+        }
+
+        public static void HandleQuestUpdate(string objective, 
+        string tooltip = "", 
+        string reward = "", 
+        string icon = "",
+        uint questId = 1, 
+        byte questType = 0, 
+        byte questCommand = 0,
+        bool success = false,
+        bool ceremony = false, 
+        bool handleRollovers = false,
+        int userId = -1)
+        {
+            _game.PacketNotifier.NotifyHandleQuestUpdate(objective, tooltip, reward, icon,
+                questId, questType, questCommand, success, ceremony, handleRollovers, userId);
+        }
+
         /// <summary>
         /// Checks if the AttackableUnit is within the specified range of a target position.
         /// </summary>
@@ -1264,5 +1290,5 @@ namespace LeagueSandbox.GameServer.API
 
             objTarget.AddAssistMarker(objSource, duration);
         }
-    } 
+    }
 }

@@ -1,19 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using GameServerCore.Enums;
+﻿using GameServerCore.Enums;
 using GameServerCore.Scripting.CSharp;
 using GameServerLib.GameObjects.AttackableUnits;
 using LeagueSandbox.GameServer.API;
-using LeagueSandbox.GameServer.Inventory;
-using LeagueSandbox.GameServer.Scripting.CSharp;
-using System.Activities.Presentation.View;
-using LeagueSandbox.GameServer.Logging;
-using LeagueSandbox.GameServer.GameObjects.SpellNS;
-using log4net;
+using LeagueSandbox.GameServer.Content;
 using LeagueSandbox.GameServer.GameObjects.AttackableUnits.Buildings.AnimatedBuildings;
+using LeagueSandbox.GameServer.GameObjects.SpellNS;
 using LeagueSandbox.GameServer.GameObjects.StatsNS;
+using LeagueSandbox.GameServer.Inventory;
+using LeagueSandbox.GameServer.Logging;
+using LeagueSandbox.GameServer.Scripting.CSharp;
+using log4net;
+using System;
+using System.Activities.Presentation.View;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
 
 namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI
 {
@@ -301,12 +302,18 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI
 
         public override bool CanMove()
         {
+            // Check if we're in the middle of an auto-attack windup that can't be cancelled
+            bool isInAutoAttackWindup = IsAttacking 
+                && AutoAttackSpell != null 
+                && AutoAttackSpell.State == SpellState.STATE_CASTING
+                && AutoAttackSpell.SpellData.CantCancelWhileWindingUp;
+
             return (!IsDead
                 && MovementParameters != null)
                 || (Status.HasFlag(StatusFlags.CanMove) && Status.HasFlag(StatusFlags.CanMoveEver)
                 && (MoveOrder != OrderType.CastSpell && _castingSpell == null)
                 && (ChannelSpell == null || (ChannelSpell != null && ChannelSpell.SpellData.CanMoveWhileChanneling))
-                && (!IsAttacking || !AutoAttackSpell.SpellData.CantCancelWhileWindingUp)
+                && !isInAutoAttackWindup
                 && !(Status.HasFlag(StatusFlags.Netted)
                 || Status.HasFlag(StatusFlags.Rooted)
                 || Status.HasFlag(StatusFlags.Sleep)
@@ -348,6 +355,12 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI
         /// <param name="spell">Spell to check.</param>
         public bool CanCast(Spell spell = null)
         {
+            // Check if we're in the middle of an auto-attack windup that can't be cancelled
+            bool isInAutoAttackWindup = IsAttacking 
+                && AutoAttackSpell != null 
+                && AutoAttackSpell.State == SpellState.STATE_CASTING
+                && AutoAttackSpell.SpellData.CantCancelWhileWindingUp;
+
             // TODO: Verify if all cases are accounted for.
             return ApiEventManager.OnCanCast.Publish(this, spell)
                 && Status.HasFlag(StatusFlags.CanCast)
@@ -362,7 +375,7 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI
                 && !Status.HasFlag(StatusFlags.Taunted)
                 && _castingSpell == null
                 && (ChannelSpell == null || (ChannelSpell != null && !ChannelSpell.SpellData.CantCancelWhileChanneling))
-                && (!IsAttacking || (IsAttacking && !AutoAttackSpell.SpellData.CantCancelWhileWindingUp));
+                && !isInAutoAttackWindup;
         }
 
         public bool CanLevelUpSpell(Spell s)
@@ -469,20 +482,22 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI
         /// <param name="reset">Whether or not to reset the delay between the next auto attack.</param>
         public void CancelAutoAttack(bool reset, bool fullCancel = false)
         {
-            AutoAttackSpell.SetSpellState(SpellState.STATE_READY);
-            if (reset)
+            if (reset || fullCancel)
             {
-                _autoAttackCurrentCooldown = 0;
-                AutoAttackSpell.ResetSpellCast();
+                _game.PacketNotifier.NotifyNPC_InstantStop_Attack(this, false);
             }
-
+            
+            // Properly clear all attack-related states to prevent desync
+            AutoAttackSpell.SetSpellState(SpellState.STATE_READY);
+            IsAttacking = false;
+            HasMadeInitialAttack = false;
+            
             if (fullCancel)
             {
-                IsAttacking = false;
-                HasMadeInitialAttack = false;
+                HasAutoAttacked = false;
             }
-            _game.PacketNotifier.NotifyNPC_InstantStop_Attack(this, false);
         }
+
 
         /// <summary>
         /// Forces this AI unit to perform a dash which follows the specified AttackableUnit.
@@ -595,12 +610,12 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI
         /// </summary>
         public virtual void RefreshWaypoints(float idealRange)
         {
-            if (MovementParameters != null)
+            if (MovementParameters != null || IsAttacking)
             {
                 return;
             }
 
-            if (TargetUnit != null && _castingSpell == null && ChannelSpell == null && MoveOrder != OrderType.AttackTo)
+            if (TargetUnit != null && !IsAttacking && _castingSpell == null && ChannelSpell == null && MoveOrder != OrderType.AttackTo)
             {
                 UpdateMoveOrder(OrderType.AttackTo, true);
             }
@@ -1175,7 +1190,9 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI
             }
             else if (TargetUnit == null)
             {
-                if ((IsAttacking && !AutoAttackSpell.SpellData.CantCancelWhileWindingUp) || HasMadeInitialAttack)
+                // Don't cancel attack if we're in the middle of casting (STATE_CASTING)
+                // The attack should complete its windup regardless of target position
+                if ((IsAttacking && !AutoAttackSpell.SpellData.CantCancelWhileWindingUp && AutoAttackSpell.State != SpellState.STATE_CASTING) || HasMadeInitialAttack)
                 {
                     CancelAutoAttack(!HasAutoAttacked, true);
                 }
@@ -1192,15 +1209,13 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI
             }
             else if (IsAttacking)
             {
-                if (Vector2.Distance(TargetUnit.Position, Position) > (Stats.Range.Total + TargetUnit.CollisionRadius)
-                        && AutoAttackSpell.State == SpellState.STATE_CASTING && !AutoAttackSpell.SpellData.CantCancelWhileWindingUp)
-                {
-                    // CancelAutoAttack(!HasAutoAttacked, true);
-                }
-
+                // Once an auto-attack is committed (STATE_CASTING), it should complete its windup
+                // regardless of target position. Only cancel if explicitly ordered or hard CC'd.
+                // Range checks should only happen at cast initiation, not during windup.
                 if (AutoAttackSpell.State == SpellState.STATE_READY)
                 {
                     IsAttacking = false;
+                    HasMadeInitialAttack = false;
                 }
                 return;
             }
@@ -1331,6 +1346,16 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI
                     }
                 }
             }
+        }
+
+        public float GetTotalCancelAttackRange()
+        {
+            return GetTotalAttackRange() + GlobalData.AttackRangeVariables.ClosingAttackRangeModifier;
+        }
+
+        public float GetTotalAttackRange()
+        {
+            return Stats.Range.Total + CollisionRadius;
         }
 
         /// <summary>

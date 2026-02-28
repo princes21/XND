@@ -25,7 +25,6 @@ namespace Spells
         Spell thisSpell;
         public void OnHitUnit(DamageData  damageData)
         {
-            LogDebug("yo");
             CreateTimer(0.1f, () => { thisSpell.CastInfo.Owner.RemoveBuffsWithName("PowerFist"); });
         }
 
@@ -47,9 +46,10 @@ namespace Spells
             thisSpell = spell;
             var owner = spell.CastInfo.Owner;
             AddBuff("PowerFist", 10.0f, 1, spell, owner, owner);
+            AddBuff("AbilityUsed", 4f, 1, spell, owner, owner);
         }
 
-        
-        
+
+
     }
 }

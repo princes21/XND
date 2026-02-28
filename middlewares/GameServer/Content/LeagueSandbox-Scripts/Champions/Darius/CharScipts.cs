@@ -17,7 +17,6 @@ namespace CharScripts
         public void OnActivate(ObjAIBase owner, Spell spell = null)
 
         {
-
             Spell = spell;
             {
                 ApiEventManager.OnLaunchAttack.AddListener(this, owner, OnLaunchAttack, false);

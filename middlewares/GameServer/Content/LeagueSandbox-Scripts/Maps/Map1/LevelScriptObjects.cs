@@ -75,28 +75,28 @@ namespace MapScripts.Map1
             {TeamId.TEAM_BLUE, new Dictionary<TurretType, string>
             {
                 {TurretType.FOUNTAIN_TURRET, "OrderTurretShrine" },
-                {TurretType.NEXUS_TURRET, "SRUAP_Turret_Order4" },
-                {TurretType.INHIBITOR_TURRET, "SRUAP_Turret_Order3" },
-                {TurretType.INNER_TURRET, "SRUAP_Turret_Order2" },
-                {TurretType.OUTER_TURRET, "SRUAP_Turret_Order1" },
+                {TurretType.NEXUS_TURRET, "OrderTurretAngel" },
+                {TurretType.INHIBITOR_TURRET, "OrderTurretDragon" },
+                {TurretType.INNER_TURRET, "OrderTurretNormal2" },
+                {TurretType.OUTER_TURRET, "OrderTurretNormal" },
             } },
             {TeamId.TEAM_PURPLE, new Dictionary<TurretType, string>
             {
                 {TurretType.FOUNTAIN_TURRET, "ChaosTurretShrine" },
-                {TurretType.NEXUS_TURRET, "SRUAP_Turret_Chaos4" },
-                {TurretType.INHIBITOR_TURRET, "SRUAP_Turret_Chaos3" },
-                {TurretType.INNER_TURRET, "SRUAP_Turret_Chaos2" },
-                {TurretType.OUTER_TURRET, "SRUAP_Turret_Chaos1" },
+                {TurretType.NEXUS_TURRET, "ChaosTurretNormal" },
+                {TurretType.INHIBITOR_TURRET, "ChaosTurretGiant" },
+                {TurretType.INNER_TURRET, "ChaosTurretWorm2" },
+                {TurretType.OUTER_TURRET, "ChaosTurretWorm" },
             } }
         };
 
         //Turret Items
         static Dictionary<TurretType, int[]> TurretItems { get; set; } = new Dictionary<TurretType, int[]>
         {
-            { TurretType.OUTER_TURRET, new[] { 3085, 3075, 3124, 3178 } },
-            { TurretType.INNER_TURRET, new[] { 3085, 3075, 3153, 3124, 3178 } },
-            { TurretType.INHIBITOR_TURRET, new[] { 3085, 3075, 3153, 3072, 3124, 3178 } },
-            { TurretType.NEXUS_TURRET, new[] { 3085, 3075, 3153, 3072, 3031, 3124, 3178 } }
+            { TurretType.OUTER_TURRET, new[] { 1500, 1501, 1502, 1503 } },
+            { TurretType.INNER_TURRET, new[] { 1500, 1501, 1502, 1503, 1504 } },
+            { TurretType.INHIBITOR_TURRET, new[] { 1501, 1502, 1503, 1505 } },
+            { TurretType.NEXUS_TURRET, new[] { 1501, 1502, 1503, 1505 } }
         };
 
         static StatsModifier TurretStatsModifier = new StatsModifier();

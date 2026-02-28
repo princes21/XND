@@ -1,20 +1,22 @@
-﻿using System.Collections.Generic;
-using System.Numerics;
+﻿using GameServerCore.Enums;
 using GameServerCore.NetInfo;
-using GameServerCore.Enums;
-using LeagueSandbox.GameServer.GameObjects.StatsNS;
-using LeagueSandbox.GameServer.GameObjects.SpellNS;
-using LeagueSandbox.GameServer.Inventory;
-using LeagueSandbox.GameServer.API;
-using LeaguePackets.Game.Events;
-using System;
-using GameServerLib.GameObjects.AttackableUnits;
 using GameServerCore.Scripting.CSharp;
+using GameServerLib.GameObjects.AttackableUnits;
+using GameServerLib.Handlers;
+using LeaguePackets.Game.Events;
+using LeagueSandbox.GameServer.API;
+using LeagueSandbox.GameServer.Content;
+using LeagueSandbox.GameServer.GameObjects.SpellNS;
+using LeagueSandbox.GameServer.GameObjects.StatsNS;
+using LeagueSandbox.GameServer.Inventory;
 using LeagueSandbox.GameServer.Logging;
 using log4net;
-using LeagueSandbox.GameServer.Content;
+using System;
+using System.Collections.Generic;
 using System.Linq;
-using GameServerLib.Handlers;
+using System.Numerics;
+using System.Threading;
+
 
 namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI
 {
@@ -30,12 +32,14 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI
         private List<ToolTipData> _tipsChanged;
         public Shop Shop { get; protected set; }
         public float RespawnTimer { get; private set; }
+        public float PermaTimer { get; set; }
         public int DeathSpree { get; set; } = 0;
         public int KillSpree { get; set; } = 0;
         public float GoldFromMinions { get; set; }
         public RuneCollection RuneList { get; }
         public TalentInventory TalentInventory { get; set; }
         public ChampionStats ChampStats { get; private set; } = new ChampionStats();
+        public bool HasABadItem = false;
 
         public byte SkillPoints { get; set; }
 
@@ -410,10 +414,14 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI
 
         public override void Die(DeathData data)
         {
-            _game.PacketNotifier.NotifyS2C_SetGreyscaleEnabledWhenDead(false, data.Unit);
             IsDead = true;
             RespawnTimer = (GetDeathTimerPerDeath() * ChampStats.Deaths) + 2000; // 2 second base
             ChampStats.Deaths++;
+
+            if (HasABadItem)
+            {
+             RespawnTimer = 999000;
+            }
 
             //Check order of operations
             _game.ObjectManager.StopTargeting(this);

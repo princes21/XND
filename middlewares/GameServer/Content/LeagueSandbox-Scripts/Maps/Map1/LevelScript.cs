@@ -1,14 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Numerics;
-using GameServerCore.Domain;
+﻿using GameServerCore.Domain;
 using GameServerCore.Enums;
 using LeagueSandbox.GameServer.Content;
-using LeagueSandbox.GameServer.Scripting.CSharp;
-using LeagueSandbox.GameServer.GameObjects.StatsNS;
-using static LeagueSandbox.GameServer.API.ApiMapFunctionManager;
-using static LeagueSandbox.GameServer.API.ApiGameEvents;
 using LeagueSandbox.GameServer.GameObjects.AttackableUnits.Buildings.AnimatedBuildings;
+using LeagueSandbox.GameServer.GameObjects.SpellNS;
+using LeagueSandbox.GameServer.GameObjects.StatsNS;
+using LeagueSandbox.GameServer.Logging;
+using LeagueSandbox.GameServer.Scripting.CSharp;
+using log4net;
+using System;
+using System.Collections.Generic;
+using System.Numerics;
+using static LeagueSandbox.GameServer.API.ApiGameEvents;
+using static LeagueSandbox.GameServer.API.ApiMapFunctionManager;
 
 namespace MapScripts.Map1
 {
@@ -17,7 +20,7 @@ namespace MapScripts.Map1
         public virtual MapScriptMetadata MapScriptMetadata { get; set; } = new MapScriptMetadata();
 
         public bool HasFirstBloodHappened { get; set; } = false;
-        public long NextSpawnTime { get; set; } = 10 * 1000;
+        public long NextSpawnTime { get; set; } = 90 * 1000;
         public string LaneMinionAI { get; set; } = "LaneMinionAI";
         public Dictionary<TeamId, Dictionary<int, Dictionary<int, Vector2>>> PlayerSpawnPoints { get; }
 
@@ -85,21 +88,27 @@ namespace MapScripts.Map1
         {
             MinionSpawnType.MINION_TYPE_MELEE,
             MinionSpawnType.MINION_TYPE_MELEE,
+            MinionSpawnType.MINION_TYPE_MELEE,
             MinionSpawnType.MINION_TYPE_CASTER,
             MinionSpawnType.MINION_TYPE_CASTER,
             MinionSpawnType.MINION_TYPE_CASTER }
         },
         {"CannonMinionWave", new List<MinionSpawnType>{
+            MinionSpawnType.MINION_TYPE_MELEE,
+            MinionSpawnType.MINION_TYPE_MELEE,
+            MinionSpawnType.MINION_TYPE_MELEE,
             MinionSpawnType.MINION_TYPE_CANNON,
-            MinionSpawnType.MINION_TYPE_CANNON,
-            MinionSpawnType.MINION_TYPE_CANNON,
+            MinionSpawnType.MINION_TYPE_CASTER,
             MinionSpawnType.MINION_TYPE_CASTER,
             MinionSpawnType.MINION_TYPE_CASTER }
         },
         {"SuperMinionWave", new List<MinionSpawnType>{
             MinionSpawnType.MINION_TYPE_SUPER,
-            MinionSpawnType.MINION_TYPE_SUPER,
-            MinionSpawnType.MINION_TYPE_SUPER,
+            MinionSpawnType.MINION_TYPE_MELEE,
+            MinionSpawnType.MINION_TYPE_MELEE,
+            MinionSpawnType.MINION_TYPE_MELEE,
+            MinionSpawnType.MINION_TYPE_CASTER,
+            MinionSpawnType.MINION_TYPE_CASTER,
             MinionSpawnType.MINION_TYPE_CASTER }
         },
         {"DoubleSuperMinionWave", new List<MinionSpawnType>{
@@ -154,10 +163,13 @@ namespace MapScripts.Map1
             LevelScriptObjects.LoadBuildings(mapObjects);
         }
 
+        Spell spell;
         public virtual void OnMatchStart()
         {
             NeutralMinionSpawn.InitializeCamps();
             LevelScriptObjects.OnMatchStart();
+            AddHasteOnRespawnListener();
+            AddOnAbilityUseListener(spell);
         }
 
         public void Update(float diff)
@@ -242,7 +254,7 @@ namespace MapScripts.Map1
                 new Tuple<long, int>(20 * 60 * 1000, 1),
                 new Tuple<long, int>(35 * 60 * 1000, 0)
             };
-            var cannonMinionCap = 3;
+            var cannonMinionCap = 2;
 
             foreach (var timestamp in cannonMinionTimestamps)
             {
@@ -280,11 +292,6 @@ namespace MapScripts.Map1
                 TeamId barrackTeam = barrack.Value.GetTeamID();
                 Lane lane = barrack.Value.GetSpawnBarrackLaneID();
                 Inhibitor inhibitor = LevelScriptObjects.InhibitorList[opposed_team][lane];
-                // Skip spawning minions for top and bot lanes
-                if (lane == Lane.LANE_L || lane == Lane.LANE_R)
-                {
-                    continue;
-                }
                 Vector2 position = new Vector2(barrack.Value.CentralPoint.X, barrack.Value.CentralPoint.Z);
                 bool isInhibitorDead = inhibitor.InhibitorState == DampenerState.RegenerationState;
                 Tuple<int, List<MinionSpawnType>> spawnWave = MinionWaveToSpawn(GameTime(), _cannonMinionCount, isInhibitorDead, LevelScriptObjects.AllInhibitorsAreDead[opposed_team]);
@@ -315,5 +322,40 @@ namespace MapScripts.Map1
             }
             return true;
         }
+
+
+
+        public void AddHasteOnRespawnListener()
+        {
+            foreach (var player in GetAllPlayers())
+            {
+                ApiEventManager.OnResurrect.AddListener(player, player, OnResurrect, false);
+            }
+        }
+
+        public virtual void OnResurrect(ObjAIBase owner)
+        {
+            AddBuff("Haste", 8f, 1, null, owner, owner); //Respawn Haste
+        }
+
+
+        public void AddOnAbilityUseListener(Spell spell)
+        {
+            foreach (var player in GetAllPlayers())
+            {
+                ApiEventManager.OnSpellCast.AddListener(player, spell, OnSpellCast, false);
+            }
+        }
+
+        Champion player;
+        ObjAIBase owner;
+        private static ILog _logger = LoggerProvider.GetLogger();
+        public virtual void OnSpellCast(Spell spell)
+        {
+            var owner = spell.CastInfo.Owner;
+            AddBuff("AbilityUsed", 4f, 1, spell, owner, owner, false);
+            _logger.Info("AbilityUsed"); //doesn't work
+            }
+        }
     }
-}
+

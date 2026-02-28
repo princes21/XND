@@ -605,6 +605,7 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits
                 return;
             }
 
+            postMitigationDamage = damageData.PostMitigationDamage;
             Stats.CurrentHealth = Math.Max(0.0f, Stats.CurrentHealth - postMitigationDamage);
 
             ApiEventManager.OnTakeDamage.Publish(damageData.Target, damageData);
