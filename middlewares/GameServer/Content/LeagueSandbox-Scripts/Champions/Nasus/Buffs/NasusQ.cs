@@ -46,14 +46,6 @@ namespace Buffs
             p = AddParticleTarget(ownerSpell.CastInfo.Owner, ownerSpell.CastInfo.Owner, "Nasus_Base_Q_Buf.troy", owner, buff.Duration, 1, "BUFFBONE_CSTM_WEAPON_1");
             p2 = AddParticleTarget(ownerSpell.CastInfo.Owner, ownerSpell.CastInfo.Owner, "Nasus_Base_Q_Wpn_trail.troy", owner, buff.Duration, 1, "BUFFBONE_CSTM_WEAPON_1");
             owner.SkipNextAutoAttack();
-
-            ShowObjectiveText("this is a test");
-            HandleQuestUpdate(
-                objective: "Kill the enemy Nexus",
-                tooltip: "Destroy it to win",
-                reward: "Victory",
-                questId: 1
- );
         }
 
 
