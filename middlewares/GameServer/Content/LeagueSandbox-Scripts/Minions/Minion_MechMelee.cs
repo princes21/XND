@@ -1,9 +1,6 @@
-using LeagueSandbox.GameServer.Logging;
-using log4net;
-
 namespace CharScripts
 {
-    public class CharScriptRed_Minion_Basic : ICharScript
+    public class CharScriptRed_Minion_MechMelee : ICharScript
     {
         ObjAIBase _owner;
         public StatsModifier StatsModifier { get; private set; } = new StatsModifier();
@@ -23,9 +20,9 @@ namespace CharScripts
 
             float currentMinutes = GameTime() / (1000f * 60f);
 
-            if (!_owner.HasBuff("MinionBasicBuff"))
+            if (!_owner.HasBuff("SuperminionBuff"))
             {
-                AddBuff("MinionBasicBuff", float.MaxValue, 1, null, _owner, _owner, true);
+                AddBuff("SuperminionBuff", float.MaxValue, 1, null, _owner, _owner, true);
             }
         }
     }
@@ -33,7 +30,7 @@ namespace CharScripts
 
 namespace CharScripts
 {
-    public class CharScriptBlue_Minion_Basic : ICharScript
+    public class CharScriptBlue_Minion_MechMelee : ICharScript
     {
         ObjAIBase _owner;
         public StatsModifier StatsModifier { get; private set; } = new StatsModifier();
@@ -53,9 +50,9 @@ namespace CharScripts
 
             float currentMinutes = GameTime() / (1000f * 60f);
 
-            if (!_owner.HasBuff("MinionBasicBuff"))
+            if (!_owner.HasBuff("SuperminionBuff"))
             {
-                AddBuff("MinionBasicBuff", float.MaxValue, 1, null, _owner, _owner, true);
+                AddBuff("SuperminionBuff", float.MaxValue, 1, null, _owner, _owner, true);
             }
         }
     }
@@ -64,7 +61,7 @@ namespace CharScripts
 
 namespace Buffs
 {
-    class MinionBasicBuff : IBuffGameScript
+    class SuperminionBuff : IBuffGameScript
     {
         public BuffScriptMetaData BuffMetaData { get; set; } = new BuffScriptMetaData
         {
@@ -83,10 +80,10 @@ namespace Buffs
         private const float HP_PERCENT_AT_TARGET = 2.0f;   // x3.0 total HP at 30 min (290 -> ~870)
 
 
-        // How fast it grows past the target ï¿½ no hard cap, just keeps scaling
+        // How fast it grows past the target — no hard cap, just keeps scaling
         // Every additional 10 minutes adds another 50% of the target bonus
-        private const float AD_PERCENT_PER_MINUTE = 0.0867f;  // AD_PERCENT_AT_TARGET / TARGET_MINUTES
-        private const float HP_PERCENT_PER_MINUTE = 0.0917f;  // HP_PERCENT_AT_TARGET / TARGET_MINUTES
+        private const float AD_PERCENT_PER_MINUTE = 0.1833f;  // hits very hard when it reaches you
+        private const float HP_PERCENT_PER_MINUTE = 0.1667f;  // tankiest of the normal minions
 
         public void OnActivate(AttackableUnit unit, Buff buff, Spell ownerSpell)
         {

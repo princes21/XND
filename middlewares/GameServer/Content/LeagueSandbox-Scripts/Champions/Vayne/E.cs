@@ -50,7 +50,7 @@ namespace Spells
             var damage = 45 * spell.CastInfo.SpellLevel + ADratio;
             target.TakeDamage(Owner, damage, DamageType.DAMAGE_TYPE_PHYSICAL, DamageSource.DAMAGE_SOURCE_SPELL, false);
             ForceMovement(target, "RUN", GetPointFromUnit(target, -(470)), 2200, 0, 0, 0);
-            AddBuff("Stun", 1.5f, 1, spell, target, Owner);
+            AddBuff("Stun", 0.75f, 1, spell, target, Owner);
             for (int i = 0; i < ApplyStacksAmount; i++)
             {
                 AddBuff("VayneSilveredBolts", float.MaxValue, 1, spell, target, Owner);

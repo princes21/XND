@@ -18,7 +18,7 @@ namespace LeagueSandbox.GameServer.Chatbox.Commands
             _playerManager = game.PlayerManager;
         }
 
-        public override void Execute(int userId, bool hasReceivedArguments, string arguments = "")
+        public override void Execute(int userId, bool hasReceivedArguments, string arguments = "") //TODO: change this to actually enable/disable fow
         {
             var split = arguments.ToLower().Split(' ');
             if (split.Length != 2)

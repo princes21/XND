@@ -27,7 +27,6 @@ namespace CharScripts
             if (owner is ObjAIBase)
             {
                 owner.AddStatModifier(StatsModifier);
-                owner.Stats.CurrentHealth = _owner.Stats.HealthPoints.Total;
             }
         }
 
@@ -40,7 +39,6 @@ namespace CharScripts
             if (!_owner.HasBuff("MinionWizardBuff"))
             {
                 AddBuff("MinionWizardBuff", float.MaxValue, 1, null, _owner, _owner, true);
-                _owner.Stats.CurrentHealth = _owner.Stats.HealthPoints.Total;
             }
         }
     }
@@ -59,7 +57,6 @@ namespace CharScripts
             if (owner is ObjAIBase)
             {
                 owner.AddStatModifier(StatsModifier);
-                owner.Stats.CurrentHealth = _owner.Stats.HealthPoints.Total;
             }
         }
 
@@ -72,7 +69,6 @@ namespace CharScripts
             if (!_owner.HasBuff("MinionWizardBuff"))
             {
                 AddBuff("MinionWizardBuff", float.MaxValue, 1, null, _owner, _owner, true);
-                _owner.Stats.CurrentHealth = _owner.Stats.HealthPoints.Total;
             }
         }
     }

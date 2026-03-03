@@ -64,7 +64,7 @@ namespace Buffs
         {
             var owner = spell.CastInfo.Owner;
 
-            float missingHealthPercent = 0.10f; // 10% of missing health, adjust as needed
+            float missingHealthPercent = 0.5f; // 5% of missing health, adjust as needed
             float missingHealth = Unit.Stats.HealthPoints.Total - Unit.Stats.CurrentHealth;
             float damage = missingHealth * missingHealthPercent;
             Unit.TakeDamage(owner, damage, DamageType.DAMAGE_TYPE_TRUE, DamageSource.DAMAGE_SOURCE_ATTACK, false);

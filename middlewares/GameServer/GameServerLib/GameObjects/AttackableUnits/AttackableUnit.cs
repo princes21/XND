@@ -1642,10 +1642,13 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits
         /// TODO: Implement ForcedMovement methods and enumerators to handle different kinds of dashes.
         public virtual void SetDashingState(bool state, MoveStopReason reason = MoveStopReason.Finished)
         {
-            _dashEffectsToDisable = 0;
             if (state)
             {
                 _dashEffectsToDisable = MovementParameters.SetStatus;
+            }
+            else
+            {
+                _dashEffectsToDisable = 0;
             }
             SetStatus(StatusFlags.None, true);
 

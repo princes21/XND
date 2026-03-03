@@ -75,6 +75,16 @@ namespace LeagueSandbox.GameServer.Packets.PacketHandlers
                         // This prevents animation cancellation when player accidentally clicks during attack windup
                         if (u != null || !champion.IsAttacking || champion.AutoAttackSpell?.State != GameServerCore.Enums.SpellState.STATE_CASTING)
                         {
+                            // Validate target for attack orders - ensure target is visible, targetable, and alive
+                            if (u != null && (req.OrderType == OrderType.AttackMove || req.OrderType == OrderType.AttackTo))
+                            {
+                                if (u.IsDead ||
+                                    !u.Status.HasFlag(StatusFlags.Targetable) ||
+                                    !u.IsVisibleByTeam(champion.Team))
+                                {
+                                    u = null;
+                                }
+                            }
                             champion.SetTargetUnit(u);
                         }
                         break;

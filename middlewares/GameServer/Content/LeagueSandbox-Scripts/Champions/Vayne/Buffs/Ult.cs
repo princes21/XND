@@ -58,10 +58,10 @@ namespace Buffs
         public void OnActivate(AttackableUnit unit, Buff buff, Spell ownerSpell)
         {
             unit.SetAnimStates(UltAnimOverrides);
-            StatsModifier.AttackDamage.FlatBonus = 165;
+            StatsModifier.AttackDamage.FlatBonus = 125;
             StatsModifier.MoveSpeed.PercentBonus = 0.15f;
             StatsModifier.Range.FlatBonus = 250f;
-            StatsModifier.CriticalDamage.PercentBonus = 0.25f;
+            StatsModifier.CriticalDamage.PercentBonus = 0.15f;
             unit.AddStatModifier(StatsModifier);
         //  ownerSpell.CastInfo.Owner.SetAutoAttackSpell("VayneUltAttack", false); todo: figure why it's buggy
        //    ownerSpell.SetAutocast();

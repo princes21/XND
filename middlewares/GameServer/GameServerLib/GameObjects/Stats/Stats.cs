@@ -184,6 +184,12 @@ namespace LeagueSandbox.GameServer.GameObjects.StatsNS
             Tenacity.ApplyStatModifier(modifier.Tenacity);
             SlowResistPercent += modifier.SlowResistPercent;
             MultiplicativeSpeedBonus += modifier.MultiplicativeSpeedBonus;
+
+            // Heal to full when max health increases to prevent visual desync
+            if (modifier.HealthPoints.StatModified && CurrentHealth < HealthPoints.Total)
+            {
+                CurrentHealth = HealthPoints.Total;
+            }
         }
 
         public void RemoveModifier(StatsModifier modifier)
