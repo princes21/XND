@@ -142,11 +142,11 @@ namespace MapScripts.Map1
                         }
                         else if (turret.Type != TurretType.NEXUS_TURRET)
                         {
-                            TurretHealthModifier.HealthPoints.BaseBonus = 250.0f * Players[enemyTeam].Count;
+                            TurretHealthModifier.HealthPoints.BaseBonus = 2500.0f * Players[enemyTeam].Count;
                         }
                         else
                         {
-                            TurretHealthModifier.HealthPoints.BaseBonus = 125.0f * Players[enemyTeam].Count;
+                            TurretHealthModifier.HealthPoints.BaseBonus = 1250.0f * Players[enemyTeam].Count;
                         }
 
                         turret.AddStatModifier(TurretHealthModifier);
