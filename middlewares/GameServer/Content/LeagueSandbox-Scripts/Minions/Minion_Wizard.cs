@@ -101,6 +101,9 @@ namespace Buffs
         private const float AD_PERCENT_PER_MINUTE = 0.1117f;  // AD_PERCENT_AT_TARGET / TARGET_MINUTES
         private const float HP_PERCENT_PER_MINUTE = 0.0467f;  // HP_PERCENT_AT_TARGET / TARGET_MINUTES
 
+        private const float EXP_PERCENT_PER_MINUTE = 0.1253f;
+        private const float GOLD_PERCENT_PER_MINUTE = 0.1253f;
+
         public void OnActivate(AttackableUnit unit, Buff buff, Spell ownerSpell)
         {
             float minutes = GameTime() / (1000f * 60f);
@@ -111,8 +114,14 @@ namespace Buffs
                 float adPercent = AD_PERCENT_PER_MINUTE * minutes;
                 float hpPercent = HP_PERCENT_PER_MINUTE * minutes;
 
+                float ExpPercent = EXP_PERCENT_PER_MINUTE * minutes;
+                float GoldPercent = GOLD_PERCENT_PER_MINUTE * minutes;
+
                 StatsModifier.AttackDamage.PercentBonus = adPercent;
                 StatsModifier.HealthPoints.PercentBonus = hpPercent;
+
+                StatsModifier.ExpGivenOnDeath.PercentBonus = ExpPercent;
+                StatsModifier.GoldGivenOnDeath.PercentBonus = GoldPercent;
 
                 unit.AddStatModifier(StatsModifier);  // <-- this was missing
 
