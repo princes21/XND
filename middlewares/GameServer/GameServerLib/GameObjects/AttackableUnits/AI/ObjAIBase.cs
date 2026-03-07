@@ -491,6 +491,8 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI
         {
             if (reset || fullCancel)
             {
+                _autoAttackCurrentCooldown = 0;
+                AutoAttackSpell.ResetSpellCast();
                 _game.PacketNotifier.NotifyNPC_InstantStop_Attack(this, false);
             }
             

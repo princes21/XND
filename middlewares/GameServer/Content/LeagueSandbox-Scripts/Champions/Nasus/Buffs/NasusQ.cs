@@ -106,13 +106,6 @@ namespace Buffs
             RemoveParticle(p2);
             //ApiEventManager.OnHitUnit.RemoveListener(owner);
             //ApiEventManager.OnKillUnit.RemoveListener(owner);
-
-            HandleQuestUpdate(
-    objective: "",
-    questId: 1,        // same ID as the one you want to remove
-    success: true,     // mark it as done
-    ceremony: true     // might play a completion animation then dismiss it
-);
         }
     }
 }
