@@ -230,6 +230,9 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI
 
         float _goldTimer;
         float _EXPTimer;
+        private byte _lastNotifiedLevel = 0;
+        private float _levelNotifyTimer = 0;
+        private const float LEVEL_NOTIFY_COOLDOWN = 500f; // ms
         public override void Update(float diff)
         {
             base.Update(diff);
@@ -260,8 +263,6 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI
                 }
             }
 
-
-
             if (RespawnTimer > 0)
             {
                 RespawnTimer -= diff;
@@ -278,6 +279,20 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI
                 {
                     _championHitFlagTimer = 0;
                 }
+            }
+
+            if (_levelNotifyTimer > 0)
+            {
+                _levelNotifyTimer -= diff;
+            }
+
+            // Force resync if client level is behind server level. Hack fix? Will it negatively affect performance?
+            if (Stats.Level != _lastNotifiedLevel && _levelNotifyTimer <= 0)
+            {
+                _game.PacketNotifier.NotifyNPC_LevelUp(this);
+                _game.PacketNotifier.NotifyOnReplication(this, partial: false);
+                _lastNotifiedLevel = (byte)Stats.Level;
+                _levelNotifyTimer = LEVEL_NOTIFY_COOLDOWN;
             }
 
             // TODO: Find out the best way to bulk send these for all champions (tool tip handler?).
@@ -332,24 +347,23 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI
             var spawnPos = GetRespawnPosition();
             TeleportTo(spawnPos.X, spawnPos.Y);
         }
+       
+
 
         public void AddExperience(float experience, bool notify = true)
         {
             var maxLevel = _game.Map.MapScript.MapScriptMetadata.MaxLevel;
-            if (experience > 0)
+            if (experience > 0 && Stats.Level < maxLevel)
             {
-                if (Stats.Level < maxLevel)
+                Stats.Experience += experience;
+                if (notify)
                 {
-                    Stats.Experience += experience;
-
-                    if (notify)
-                    {
-                        _game.PacketNotifier.NotifyUnitAddEXP(this, experience);
-                    }
-
-
-                    while (Stats.Experience >= _game.Map.MapData.ExpCurve[Stats.Level - 1] && LevelUp());
+                    _game.PacketNotifier.NotifyUnitAddEXP(this, experience);
                 }
+                while (Stats.Level < maxLevel &&
+                       Stats.Level >= 1 &&
+                       Stats.Experience >= _game.Map.MapData.ExpCurve[Stats.Level - 1] &&
+                       LevelUp()) ;
             }
         }
 
@@ -370,6 +384,7 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI
                     SkillPoints++;
                 }
                 base.LevelUp(force);
+                _levelNotifyTimer = LEVEL_NOTIFY_COOLDOWN;
                 _logger.Debug($"Player {Name} leveled up to {stats.Level}");
 
                 return true;
