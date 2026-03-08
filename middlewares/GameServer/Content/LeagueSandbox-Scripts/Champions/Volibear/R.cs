@@ -60,7 +60,7 @@ namespace Spells
                     }
                 }
 
-                //AddBuff("AatroxR", 12f, 1, spell, spell.CastInfo.Owner, spell.CastInfo.Owner); test
+                //AddBuff("AatroxR", 12f, 1, spell, spell.CastInfo.Owner, spell.CastInfo.Owner);
             }
         }
     }
