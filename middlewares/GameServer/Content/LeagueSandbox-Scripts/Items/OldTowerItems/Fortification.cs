@@ -29,11 +29,22 @@ namespace ItemPassives
         private void OnPreTakeDamage(DamageData data)
         {
             float minutes = GameTime() / (1000f * 60f);
+            float Damage = data.Damage;
+            float AttackerDamage = data.Attacker.Stats.AttackDamage.Total;
+            float AttackerAP = data.Attacker.Stats.AbilityPower.Total;
+            var turret = data.Target;
+            var attacker = data.Attacker;
 
-            if (data.DamageSource == DamageSource.DAMAGE_SOURCE_ATTACK && data.Attacker is Champion)
+            if (data.DamageSource == DamageSource.DAMAGE_SOURCE_ATTACK && AttackerAP > AttackerDamage)
             {
-                data.PostMitigationDamage -= 90f;
-                
+                turret.TakeDamage(attacker, AttackerAP, DamageType.DAMAGE_TYPE_MAGICAL, DamageSource.DAMAGE_SOURCE_INTERNALRAW, false);
+            }
+
+            if (data.DamageSource == DamageSource.DAMAGE_SOURCE_ATTACK && data.Attacker is Champion && minutes < 15f)
+            {
+                {
+                    data.PostMitigationDamage = Damage - 45f;
+                }
             }
         }
     }

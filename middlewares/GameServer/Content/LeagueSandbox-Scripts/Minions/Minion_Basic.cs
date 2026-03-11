@@ -88,8 +88,8 @@ namespace Buffs
         private const float AD_PERCENT_PER_MINUTE = 0.0867f;  // AD_PERCENT_AT_TARGET / TARGET_MINUTES
         private const float HP_PERCENT_PER_MINUTE = 0.0917f;  // HP_PERCENT_AT_TARGET / TARGET_MINUTES
 
-        private const float EXP_PERCENT_PER_MINUTE = 0.1353f;
-        private const float GOLD_PERCENT_PER_MINUTE = 0.1353f;
+        private const float EXP_PERCENT_PER_MINUTE = 0.2353f;
+        private const float GOLD_PERCENT_PER_MINUTE = 0.3353f;
 
         public void OnActivate(AttackableUnit unit, Buff buff, Spell ownerSpell)
         {

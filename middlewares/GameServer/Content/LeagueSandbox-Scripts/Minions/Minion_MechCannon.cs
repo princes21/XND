@@ -85,8 +85,8 @@ namespace Buffs
         private const float AD_PERCENT_PER_MINUTE = 0.1500f;  // hits very hard when it reaches you
         private const float HP_PERCENT_PER_MINUTE = 0.1333f;  // tankiest of the normal minions
 
-        private const float EXP_PERCENT_PER_MINUTE = 0.1453f;
-        private const float GOLD_PERCENT_PER_MINUTE = 0.1453f;
+        private const float EXP_PERCENT_PER_MINUTE = 0.2453f;
+        private const float GOLD_PERCENT_PER_MINUTE = 0.3453f;
 
 
         public void OnActivate(AttackableUnit unit, Buff buff, Spell ownerSpell)
