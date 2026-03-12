@@ -34,17 +34,16 @@ namespace ItemPassives
             float AttackerAP = data.Attacker.Stats.AbilityPower.Total;
             var turret = data.Target;
             var attacker = data.Attacker;
+            float reducedDamage = Damage * 0.15f; // 85% damage reduction
 
             if (data.DamageSource == DamageSource.DAMAGE_SOURCE_ATTACK && AttackerAP > AttackerDamage)
             {
                 turret.TakeDamage(attacker, AttackerAP, DamageType.DAMAGE_TYPE_MAGICAL, DamageSource.DAMAGE_SOURCE_INTERNALRAW, false);
             }
 
-            if (data.DamageSource == DamageSource.DAMAGE_SOURCE_ATTACK && data.Attacker is Champion && minutes < 15f)
+            if (data.DamageSource == DamageSource.DAMAGE_SOURCE_ATTACK && minutes < 15f)
             {
-                {
-                    data.PostMitigationDamage = Damage - 45f;
-                }
+                    data.PostMitigationDamage = reducedDamage;
             }
         }
     }
