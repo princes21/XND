@@ -188,7 +188,7 @@ namespace LeagueSandbox.GameServer.GameObjects.StatsNS
             MultiplicativeSpeedBonus += modifier.MultiplicativeSpeedBonus;
 
             // Heal to full when max health increases to prevent visual desync
-            if (modifier.HealthPoints.StatModified && CurrentHealth < HealthPoints.Total)
+            if (modifier.HealthPoints.StatModified && CurrentHealth < HealthPoints.Total && !SetToTrueToPreventFullHealthLevelUpBug)
             {
                 CurrentHealth = HealthPoints.Total;
             }
@@ -271,6 +271,7 @@ namespace LeagueSandbox.GameServer.GameObjects.StatsNS
             }
         }
 
+        public bool SetToTrueToPreventFullHealthLevelUpBug = false;
         public void LevelUp()
         {
             Level++;
@@ -288,6 +289,7 @@ namespace LeagueSandbox.GameServer.GameObjects.StatsNS
 
             CurrentHealth += statsLevelUp.HealthPoints.BaseValue;
             CurrentMana += statsLevelUp.ManaPoints.BaseValue;
+            SetToTrueToPreventFullHealthLevelUpBug = true;
         }
 
         public float GetLevelUpStatValue(float value)

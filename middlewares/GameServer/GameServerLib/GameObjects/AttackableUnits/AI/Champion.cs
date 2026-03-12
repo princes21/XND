@@ -12,6 +12,7 @@ using LeagueSandbox.GameServer.Inventory;
 using LeagueSandbox.GameServer.Logging;
 using log4net;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -120,6 +121,7 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI
             }
             Stats.SetSummonerSpellEnabled(0, true);
             Stats.SetSummonerSpellEnabled(1, true);
+            Stats.SetToTrueToPreventFullHealthLevelUpBug = true;
 
             //Change this to send only a single LevelUp call in case of multiple levels.
             while (Stats.Level < _game.Map.MapScript.MapScriptMetadata.InitialLevel)

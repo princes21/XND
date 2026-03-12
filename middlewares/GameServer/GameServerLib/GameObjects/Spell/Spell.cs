@@ -1385,6 +1385,11 @@ namespace LeagueSandbox.GameServer.GameObjects.SpellNS
             CurrentCastTime = 0;
             CurrentChannelDuration = 0;
             CurrentDelayTime = 0;
+
+            if (CastInfo.Owner.GetCastSpell() == this)
+            { 
+            CastInfo.Owner.SetCastSpell(null);
+            }
         }
 
         /// <summary>
