@@ -1596,6 +1596,13 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits
         {
             var newCoords = _game.Map.NavigationGrid.GetClosestTerrainExit(endPos, PathfindingRadius + 1.0f);
 
+            // CRITICAL FIX: Don't dash if already at destination
+            float distSq = (newCoords - Position).LengthSquared();
+            if (distSq < 1.75f)  // Less than 1.75 unit away
+            {
+                return;  // Don't create a 0-length dash
+            }
+
             // False because we don't want this to be networked as a normal movement.
             SetWaypoints(new List<Vector2> { Position, newCoords });
 
