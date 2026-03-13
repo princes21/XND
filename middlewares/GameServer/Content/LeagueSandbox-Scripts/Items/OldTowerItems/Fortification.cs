@@ -43,7 +43,7 @@ namespace ItemPassives
 
             if (data.DamageSource == DamageSource.DAMAGE_SOURCE_ATTACK && minutes < 15f)
             {
-                    data.PostMitigationDamage = reducedDamage;
+                data.PostMitigationDamage = reducedDamage;
             }
         }
     }

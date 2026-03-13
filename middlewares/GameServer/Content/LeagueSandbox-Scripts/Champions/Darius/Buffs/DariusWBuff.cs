@@ -42,12 +42,8 @@ namespace Buffs
                 Unit = ai;
 
                 ApiEventManager.OnHitUnit.AddListener(this, ai, TargetExecute, true);
-
                 ai.SkipNextAutoAttack();
-
-
             }
-
         }
 
         public void OnDeactivate(AttackableUnit unit, Buff buff, Spell ownerSpell)

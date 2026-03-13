@@ -6,7 +6,7 @@ using static LeagueSandbox.GameServer.API.ApiFunctionManager;
 
 namespace Spells
 {
-    public class DariusNoxianTacticsONH : ISpellScript
+    public class FerociousHowl : ISpellScript
     {
         ObjAIBase Owner;
         public SpellScriptMetadata ScriptMetadata { get; private set; } = new SpellScriptMetadata()
@@ -21,7 +21,7 @@ namespace Spells
 
         public void OnSpellCast(Spell spell)
         {
-            AddBuff("DariusNoxianTacticsActive", 4f, 1, spell, Owner, Owner, false);
+            AddBuff("FerociousHowl", 4f, 1, spell, Owner, Owner, false);
             AddBuff("AbilityUsed", 4f, 1, spell, Owner, Owner);
         }
     }

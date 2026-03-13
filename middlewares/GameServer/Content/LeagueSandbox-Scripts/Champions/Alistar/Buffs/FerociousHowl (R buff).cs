@@ -17,7 +17,7 @@ using GameServerLib.GameObjects.AttackableUnits;
 
 namespace Buffs
 {
-    internal class VayneKnockBack : IBuffGameScript
+    internal class FerociousHowl : IBuffGameScript
     {
         public BuffScriptMetaData BuffMetaData { get; set; } = new BuffScriptMetaData
         {
@@ -25,20 +25,32 @@ namespace Buffs
         };
 
         public StatsModifier StatsModifier { get; private set; } = new StatsModifier();
+        ObjAIBase owner;
 
-        public void OnActivate(AttackableUnit unit, Buff buff, Spell ownerSpell)
+        public void OnActivate(AttackableUnit unit, Buff buff, Spell ownerSpell, ObjAIBase owner)
         {
-            buff.SetStatusEffect(StatusFlags.CanAttack | StatusFlags.CanMove | StatusFlags.CanCast, false);
-            ForceMovement(unit, "RUN", GetPointFromUnit(unit, -(470)), 1800f, 0, 0.1f, 0, movementOrdersType: ForceMovementOrdersType.CANCEL_ORDER);
+            owner = owner;
+            StatsModifier.AttackDamage.FlatBonus = 125f;
+            StatsModifier.CooldownReduction.FlatBonus += 0.2f;
+            StatsModifier.AbilityPower.FlatBonus += 90f;
+            unit.AddStatModifier(StatsModifier);
+            ApiEventManager.OnPreTakeDamage.AddListener(this, owner, OnPreTakeDamage, false);
         }
 
-        // TODO: Use OnMoveEnd event and call this manually.
+        private void OnPreTakeDamage(DamageData data)
+        {
+            float Damage = data.Damage;
+            float reducedDamage = Damage * 0.20f; // 80% damage reduction
+
+            if (data.DamageSource == DamageSource.DAMAGE_SOURCE_ATTACK)
+            {
+                data.PostMitigationDamage = reducedDamage;
+            }
+        }
+
         public void OnDeactivate(AttackableUnit unit, Buff buff, Spell ownerSpell)
         {
-            if (buff.SourceUnit is ObjAIBase ai && unit is Champion ch)
-            {
-                ai.SetTargetUnit(ch, true);
-            }
+
         }
     }
 }

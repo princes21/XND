@@ -10,7 +10,7 @@ using static LeagueSandbox.GameServer.API.ApiFunctionManager;
 
 namespace Spells
 {
-    public class Headbutt : ISpellScript
+    public class Headbutt : ISpellScript //status: doesn't do damage
     {
         AttackableUnit Target;
         private ObjAIBase _owner;
@@ -53,7 +53,7 @@ namespace Spells
             var to = Vector2.Normalize(Target.Position - owner.Position);
 
             ForceMovement(owner, "Spell2", new Vector2(Target.Position.X - to.X * 100f, Target.Position.Y - to.Y * 100f), 1500, 0, 0, 0);
-            AddBuff("Stun", 2.5f, 1, spell, Target, owner);
+            AddBuff("Stun", 1.25f, 1, spell, Target, owner);
         }
     }
 }
