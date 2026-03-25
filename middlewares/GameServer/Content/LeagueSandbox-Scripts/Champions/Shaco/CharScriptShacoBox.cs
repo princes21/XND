@@ -1,61 +1,78 @@
-using GameServerCore.Enums;
-using GameServerCore.Scripting.CSharp;
-using LeagueSandbox.GameServer.GameObjects;
-using LeagueSandbox.GameServer.GameObjects.AttackableUnits;
-using LeagueSandbox.GameServer.GameObjects.AttackableUnits.AI;
-using LeagueSandbox.GameServer.GameObjects.SpellNS;
-using LeagueSandbox.GameServer.Scripting.CSharp;
-using System.Numerics;
-using static LeagueSandbox.GameServer.API.ApiFunctionManager;
+﻿using GameServerLib.GameObjects.AttackableUnits;
+using LeagueSandbox.GameServer.Logging;
+using log4net;
 
-namespace Characters
+namespace CharScripts
 {
     public class CharScriptShacoBox : ICharScript
     {
-        public SpellScriptMetadata ScriptMetadata { get; private set; } = new SpellScriptMetadata();
+        ObjAIBase _owner;
+        public StatsModifier StatsModifier { get; private set; } = new StatsModifier();
 
-        public void OnSpellPostCast(Spell spell)
+        public void OnActivate(ObjAIBase owner, Spell spell = null)
         {
-            if (spell.CastInfo.Owner != null)
+            _owner = owner;
+            if (owner is ObjAIBase)
             {
-                var owner = spell.CastInfo.Owner;
-                Vector2 spellPos = new Vector2(spell.CastInfo.TargetPosition.X, spell.CastInfo.TargetPosition.Z);
-                Minion box = AddMinion(owner, "ShacoBox", "ShacoBox", spellPos, owner.Team);
+                owner.AddStatModifier(StatsModifier);
+                
+            }
+        }
 
-                float attackRange = box.Stats.Range.Total;
-                float damage = 285 + ((15 * (spell.CastInfo.SpellLevel - 1)) + owner.Stats.AbilityPower.Total * 0.8f);
-                float attackSpeed = 0.56f;
-                float duration = 5f;
+        public void OnUpdate(float diff)
+        {
+            if (_owner == null || _owner.IsDead) return;
 
-                CreateTimer(0.1f, () =>
-                {
-                    var units = GetUnitsInRange(box.Position, attackRange, true);
-                    foreach (var target in units)
-                    {
-                        if (target.Team != owner.Team && target is AttackableUnit au)
-                        {
-                            for (float t = 0; t < duration; t += attackSpeed)
-                            {
-                                float timerDelay = t;
-                                CreateTimer(timerDelay, () =>
-                                {
-                                    if (!target.IsDead && !box.IsDead)
-                                    {
-                                        target.TakeDamage(owner, damage, DamageType.DAMAGE_TYPE_MAGICAL, DamageSource.DAMAGE_SOURCE_SPELL, false);
-                                    }
-                                });
-                            }
-                        }
-                    }
-                });
+            if (!_owner.HasBuff("ShacoBoxBuff"))
+            {
+                AddBuff("ShacoBoxBuff", float.MaxValue, 1, null, _owner, _owner, true);
+            }
+        }
+    }
+}
 
-                CreateTimer(duration, () =>
-                {
-                    if (!box.IsDead)
-                    {
-                        box.TakeDamage(owner, 1000f, DamageType.DAMAGE_TYPE_TRUE, DamageSource.DAMAGE_SOURCE_INTERNALRAW, DamageResultType.RESULT_NORMAL);
-                    }
-                });
+
+namespace Buffs
+{
+    class ShacoBoxBuff : IBuffGameScript
+    {
+        public BuffScriptMetaData BuffMetaData { get; set; } = new BuffScriptMetaData
+        {
+            BuffType = BuffType.COMBAT_ENCHANCER,
+            BuffAddType = BuffAddType.REPLACE_EXISTING
+        };
+
+        public StatsModifier StatsModifier { get; private set; } = new StatsModifier();
+        ObjAIBase Unit;
+
+
+        public void OnActivate(AttackableUnit unit, Buff buff, Spell ownerSpell)
+        {
+            if (unit is ObjAIBase ai)
+            {
+                Unit = ai; //this was somehow important I guess, I also changed objAIBase to Unit, taking it from blitz code and the listener finally began working
+                buff.SetStatusEffect(StatusFlags.CanMove, false);
+                buff.SetStatusEffect(StatusFlags.CanMoveEver, false); 
+                unit.AddStatModifier(StatsModifier);  // <-- this was missing
+                ApiEventManager.OnHitUnit.AddListener(this, ai, OnHitUnit, false);
+            }
+        }
+
+        private void OnHitUnit(DamageData data)
+        {
+            float TargetHealth = data.Target.Stats.HealthPoints.Total;
+            var target = data.Target;
+            float DamageDealtPercent = TargetHealth * 0.08f;
+
+            data.PostMitigationDamage = DamageDealtPercent;
+
+        }
+
+
+        public void OnDeactivate(AttackableUnit unit, Buff buff, Spell ownerSpell)
+        {
+            if (unit is ObjAIBase)
+            {
             }
         }
     }

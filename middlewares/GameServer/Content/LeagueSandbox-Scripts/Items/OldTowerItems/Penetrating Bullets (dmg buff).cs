@@ -22,7 +22,6 @@ namespace ItemPassives
             StatsModifier.Range.FlatBonus = 200f;
             owner.AddStatModifier(StatsModifier);
             ApiEventManager.OnHitUnit.AddListener(this, owner, OnHitUnit, false);
-
         }
 
         private void OnHitUnit(DamageData data)

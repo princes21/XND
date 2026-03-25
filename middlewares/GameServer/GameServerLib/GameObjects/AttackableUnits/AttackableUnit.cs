@@ -828,6 +828,8 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits
 
         void UpdateBuffs(float diff)
         {
+            bool wasMovable = Status.HasFlag(StatusFlags.CanMove);  // snapshot BEFORE SetStatus
+
             // Combine the status effects of all the buffs
             _buffEffectsToEnable = 0;
             _buffEffectsToDisable = 0;
@@ -853,6 +855,40 @@ namespace LeagueSandbox.GameServer.GameObjects.AttackableUnits
 
             // Set the status effects of this unit.
             SetStatus(StatusFlags.None, true);
+
+            bool isMovable = Status.HasFlag(StatusFlags.CanMove);
+
+            if (wasMovable && !isMovable)
+            {
+                // TeleportTo (not StopMovement) — sets _teleportedDuringThisFrame = true,
+                // which propagates the teleport flag into the WaypointGroup packet,
+                // which causes the client to call Unit_ApplyWaypointList_LocalPlayer
+                // and actually stop movement prediction.
+                TeleportTo(Position, true);
+                StopMovement();
+                SetDashingState(false, MoveStopReason.CrowdControl);
+
+
+                // InputLock prevents right-click from re-issuing move orders via the
+                // command history replayer while CC is active.
+                if (this is Champion champ)
+                    _game.PacketNotifier.NotifyS2C_SetInputLockFlag(champ.ClientId, InputLockFlags.Movement, true);
+
+                if (this is ObjAIBase ai)
+                    ai.MoveOrder = OrderType.OrderNone;
+            }
+            else if (!wasMovable && isMovable)
+            {
+                // CC expired — resync position and unlock input.
+                _movementUpdated = true;
+
+                if (this is Champion champ)
+                    _game.PacketNotifier.NotifyS2C_SetInputLockFlag(champ.ClientId, InputLockFlags.Movement, false);
+
+                if (this is ObjAIBase ai && ai.MoveOrder == OrderType.Stop)
+                    ai.MoveOrder = OrderType.OrderNone;
+            }
+
         }
 
         /// <summary>
